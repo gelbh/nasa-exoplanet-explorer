@@ -116,7 +116,7 @@
     background-color: transparent !important;
     color: $text-muted !important;
     padding: 10px $spacing-xl !important;
-    @include transition(all, $transition-slow, $easing-standard) !important;
+    transition: all $transition-slow $easing-standard !important;
     font-size: 0.9rem !important;
     cursor: pointer !important;
     position: relative !important;
@@ -228,7 +228,7 @@
     }
 
     &.fade {
-      @include transition(opacity, $transition-fast, linear !important);
+      transition: opacity $transition-fast linear !important;
 
       &:not(.show) {
         opacity: 0;
