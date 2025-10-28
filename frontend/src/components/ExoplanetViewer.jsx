@@ -14,7 +14,8 @@ import CanvasContainer from "./CanvasContainer";
 import CombinedPanel from "./CombinedPanel";
 
 // NASA Exoplanet Archive API endpoint
-const EXOPLANET_API_ENDPOINT = "http://localhost:5000/api/exoplanets";
+// Import from constants (which uses environment variable)
+import { EXOPLANET_API_ENDPOINT } from "../utils/constants";
 
 /**
  * Exoplanet Viewer Component

@@ -3,7 +3,9 @@
  */
 
 // NASA Exoplanet Archive API endpoint
-export const EXOPLANET_API_ENDPOINT = "http://localhost:5000/api/exoplanets";
+// Use environment variable for production, fallback to localhost for development
+export const EXOPLANET_API_ENDPOINT =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api/exoplanets";
 
 // View modes
 export const VIEW_MODES = {

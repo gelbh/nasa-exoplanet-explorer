@@ -21,12 +21,14 @@ An interactive 3D visualization tool for exploring confirmed exoplanets from NAS
 ## Technology Stack
 
 ### Frontend
+
 - **React** (v19) - UI framework
 - **Vite** - Build tool and dev server
 - **Three.js** - 3D graphics and visualization
 - **Modern CSS** - Responsive styling with CSS variables
 
 ### Backend
+
 - **Node.js** - Runtime environment
 - **Express** - Web server framework
 - **NASA Exoplanet Archive API** - Data source via TAP (Table Access Protocol)
@@ -120,23 +122,19 @@ The application follows a modular architecture with clear separation of concerns
 - **Components** - React components for UI rendering
   - Modular, reusable components for different UI sections
   - Custom hooks for state management and side effects
-  
 - **Hooks** - Custom React hooks for logic extraction
   - Separates business logic from UI components
   - Manages Three.js scene lifecycle, data fetching, and user interactions
-  
 - **Managers** - Class-based managers for complex state
   - **Data Managers**: API calls, filtering, and data transformation
   - **UI Managers**: Panel visibility, tooltips, and UI state
   - **Interaction Managers**: Camera controls, search coordination
   - **Settings Managers**: Application configuration and preferences
-  
 - **Rendering** - Three.js rendering pipeline
   - **Planets**: Procedural planet generation with materials, atmospheres, and rings
   - **Stars**: Star field and host star rendering
   - **Scenes**: Galaxy view, system view, and scene transitions
   - **Shaders**: Custom GLSL shaders for visual effects
-  
 - **Physics** - Realistic physics calculations
   - Orbital mechanics and planetary motion
   - Habitable zone calculations
@@ -159,21 +157,25 @@ The application follows a modular architecture with clear separation of concerns
 ### Backend Setup
 
 1. Navigate to the backend directory:
+
 ```bash
 cd backend
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file (optional - defaults work fine):
+
 ```bash
 cp .env.example .env
 ```
 
 4. Start the server:
+
 ```bash
 npm run dev    # Development mode with auto-reload
 # or
@@ -185,21 +187,25 @@ The backend server will run on `http://localhost:5000`
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
+
 ```bash
 cd frontend
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file (optional):
+
 ```bash
 cp .env.example .env
 ```
 
 4. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -209,11 +215,13 @@ The frontend will run on `http://localhost:5173`
 ### Running the Complete Application
 
 1. **Terminal 1** - Start backend:
+
 ```bash
 cd backend && npm run dev
 ```
 
 2. **Terminal 2** - Start frontend:
+
 ```bash
 cd frontend && npm run dev
 ```
@@ -223,17 +231,20 @@ cd frontend && npm run dev
 ## Usage
 
 ### Galaxy View
+
 - **Drag** to rotate the camera
 - **Scroll** to zoom in/out
 - **Right-click + drag** to pan
 - **Click** on a star system to explore its planets
 
 ### Planet View
+
 - Explore individual exoplanets with procedurally generated visuals
 - View detailed information including radius, mass, temperature, and discovery details
 - Navigate back to galaxy view with the "Back to Galaxy" button
 
 ### Search & Filter
+
 - Use the search panel to find specific planets or star systems
 - Results update in real-time as you type
 - Click any result to jump to that planet
@@ -258,12 +269,14 @@ Planets are automatically classified based on their physical properties:
 ## Data Visualization Features
 
 - **Procedural Planet Generation**: Each planet's appearance is generated based on:
+
   - Planet type (terrestrial, super-Earth, Neptune-like, Jupiter-like)
   - Surface temperature (determines color and emissions)
   - Atmospheric properties
   - Host star characteristics
 
 - **Star Rendering**: Host stars are rendered with:
+
   - Color based on stellar temperature (blue hot → red cool)
   - Brightness based on stellar luminosity
   - Realistic lighting effects
@@ -272,56 +285,6 @@ Planets are automatically classified based on their physical properties:
   - Color coding by number of planets
   - Size indicating system complexity
   - Pulsing animation effects
-
-## Building for Production
-
-### Frontend
-```bash
-cd frontend
-npm run build
-```
-
-The production build will be in `frontend/dist/`
-
-### Backend
-The backend runs in production mode with:
-```bash
-cd backend
-npm start
-```
-
-## Deployment
-
-### Frontend Deployment (Vercel, Netlify, etc.)
-
-1. Build the frontend:
-```bash
-cd frontend && npm run build
-```
-
-2. Deploy the `frontend/dist` folder to your hosting service
-
-3. Update the `VITE_API_URL` environment variable to point to your deployed backend
-
-### Backend Deployment (Render, Heroku, Railway, etc.)
-
-1. Deploy the `backend` folder
-
-2. Set the `PORT` environment variable (most platforms do this automatically)
-
-3. Ensure your deployed backend URL is accessible from your frontend
-
-### Environment Variables
-
-**Frontend (.env)**:
-```
-VITE_API_URL=https://your-backend-url.com
-```
-
-**Backend (.env)**:
-```
-PORT=5000
-```
 
 ## Performance Optimizations
 
