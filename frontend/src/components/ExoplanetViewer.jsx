@@ -254,8 +254,10 @@ const ExoplanetViewer = () => {
    * Initialize Three.js Scene using SceneManager
    */
   const initThreeJS = () => {
+    console.log('🎬 Initializing Three.js scene...');
     sceneManagerRef.current = new SceneManager(canvasRef.current);
     sceneManagerRef.current.initialize();
+    console.log('✅ Three.js initialized successfully');
 
     // Increase max camera distance to allow galaxy view
     sceneManagerRef.current.controls.maxDistance = 150;
@@ -409,9 +411,11 @@ const ExoplanetViewer = () => {
    * Fetch exoplanets from NASA API using ApiManager
    */
   const fetchExoplanets = async () => {
+    console.log('🚀 Fetching exoplanets from NASA API...');
     await apiManagerRef.current.fetchExoplanets(
       // On batch processed
       (batchPlanets, allExoplanets) => {
+        console.log(`📦 Batch processed: ${batchPlanets.length} planets, Total: ${allExoplanets.length}`);
         filterManagerRef.current.setExoplanets(allExoplanets);
 
         if (resultCountRef.current) {
@@ -421,6 +425,7 @@ const ExoplanetViewer = () => {
         // If this is the first batch, load galaxy view
         if (allExoplanets.length === batchPlanets.length && allExoplanets.length > 0) {
           const systems = filterManagerRef.current.getNotableSystems();
+          console.log(`🌌 Rendering galaxy with ${systems.length} systems`);
           if (systems.length > 0 && galaxyRendererRef.current) {
             galaxyRendererRef.current.renderGalaxy(systems);
 
@@ -437,6 +442,7 @@ const ExoplanetViewer = () => {
       },
       // On complete
       (allExoplanets) => {
+        console.log(`✅ All data loaded: ${allExoplanets.length} exoplanets`);
         const buildList = () => {
           const results = filterManagerRef.current.searchUnified('');
           uiManagerRef.current.updateUnifiedResultsList(results);
@@ -451,6 +457,7 @@ const ExoplanetViewer = () => {
         }
 
         const systems = filterManagerRef.current.getNotableSystems();
+        console.log(`🌌 Final galaxy render with ${systems.length} systems`);
         if (systems.length > 0 && galaxyRendererRef.current) {
           galaxyRendererRef.current.renderGalaxy(systems);
         }
