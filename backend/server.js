@@ -1,7 +1,7 @@
-import express from 'express';
-import cors from 'cors';
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
+import express from "express";
+import cors from "cors";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -13,14 +13,14 @@ app.use(cors());
 app.use(express.json());
 
 // NASA Exoplanet Archive API endpoint
-const NASA_API_BASE = 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync';
+const NASA_API_BASE = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync";
 
 /**
  * GET /api/exoplanets
  * Fetches exoplanet data from NASA Exoplanet Archive
  * Proxies the request to avoid CORS issues on the frontend
  */
-app.get('/api/exoplanets', async (req, res) => {
+app.get("/api/exoplanets", async (req, res) => {
   try {
     // Build query for NASA Exoplanet Archive
     // Using TAP (Table Access Protocol) to query the exoplanet catalog
@@ -35,26 +35,30 @@ app.get('/api/exoplanets', async (req, res) => {
         ra, dec
       FROM ps
       WHERE default_flag = 1
-    `.replace(/\s+/g, ' ').trim();
+    `
+      .replace(/\s+/g, " ")
+      .trim();
 
-    const apiUrl = `${NASA_API_BASE}?query=${encodeURIComponent(query)}&format=json`;
+    const apiUrl = `${NASA_API_BASE}?query=${encodeURIComponent(
+      query
+    )}&format=json`;
 
-    console.log('Fetching exoplanet data from NASA...');
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
-      throw new Error(`NASA API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `NASA API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
-    console.log(`Successfully fetched ${data.length} exoplanets`);
 
     res.json(data);
   } catch (error) {
-    console.error('Error fetching exoplanets:', error);
+    console.error("Error fetching exoplanets:", error);
     res.status(500).json({
-      error: 'Failed to fetch exoplanet data',
-      message: error.message
+      error: "Failed to fetch exoplanet data",
+      message: error.message,
     });
   }
 });
@@ -63,7 +67,7 @@ app.get('/api/exoplanets', async (req, res) => {
  * GET /api/planet/:name
  * Get detailed information about a specific planet
  */
-app.get('/api/planet/:name', async (req, res) => {
+app.get("/api/planet/:name", async (req, res) => {
   try {
     const planetName = req.params.name;
 
@@ -71,9 +75,13 @@ app.get('/api/planet/:name', async (req, res) => {
       SELECT *
       FROM ps
       WHERE pl_name = '${planetName}' AND default_flag = 1
-    `.replace(/\s+/g, ' ').trim();
+    `
+      .replace(/\s+/g, " ")
+      .trim();
 
-    const apiUrl = `${NASA_API_BASE}?query=${encodeURIComponent(query)}&format=json`;
+    const apiUrl = `${NASA_API_BASE}?query=${encodeURIComponent(
+      query
+    )}&format=json`;
 
     const response = await fetch(apiUrl);
 
@@ -84,15 +92,15 @@ app.get('/api/planet/:name', async (req, res) => {
     const data = await response.json();
 
     if (data.length === 0) {
-      return res.status(404).json({ error: 'Planet not found' });
+      return res.status(404).json({ error: "Planet not found" });
     }
 
     res.json(data[0]);
   } catch (error) {
-    console.error('Error fetching planet details:', error);
+    console.error("Error fetching planet details:", error);
     res.status(500).json({
-      error: 'Failed to fetch planet details',
-      message: error.message
+      error: "Failed to fetch planet details",
+      message: error.message,
     });
   }
 });
@@ -101,8 +109,8 @@ app.get('/api/planet/:name', async (req, res) => {
  * GET /api/health
  * Health check endpoint
  */
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // Start server
