@@ -10,13 +10,21 @@ An interactive 3D visualization tool for exploring confirmed exoplanets from NAS
 
 ## Features
 
+### Core Features
 - **3D Visualization**: Explore exoplanets in stunning 3D using Three.js
 - **Real NASA Data**: Fetches live data from NASA Exoplanet Archive (5000+ confirmed planets)
-- **Procedural Generation**: Planets are procedurally generated based on real physical properties (radius, mass, temperature, stellar characteristics)
+- **Procedural Generation**: Planets are procedurally generated based on real physical properties
 - **Galaxy View**: See star systems distributed across a galaxy visualization
 - **Interactive Search**: Search and filter planets by name, type, temperature, and distance
 - **Planet Details**: View comprehensive information about each exoplanet
-- **Responsive Design**: Works on desktop and mobile devices
+
+### New Features ✨
+- **Bookmarks & Favorites**: Save and manage your favorite planets and systems
+- **Planet Comparison**: Compare multiple exoplanets side-by-side with visual charts
+- **Share & Export**: Generate shareable URLs, export screenshots, and download planet data
+- **PWA Support**: Install as an app, works offline with service worker caching
+- **Accessibility**: WCAG 2.1 AA compliant with keyboard navigation and screen reader support
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
 ## Technology Stack
 
@@ -288,10 +296,161 @@ Planets are automatically classified based on their physical properties:
 
 ## Performance Optimizations
 
-- **Batch Processing**: Exoplanet data is processed in batches to avoid blocking the UI
+### Frontend
+- **Code Splitting**: Vendor chunks separated for optimal loading
+- **Lazy Loading**: Three.js modules loaded on demand
+- **Batch Processing**: Exoplanet data processed in batches to avoid blocking UI
 - **Request Idle Callback**: Uses browser idle time for non-critical operations
-- **Efficient Rendering**: Three.js scene optimizations for smooth 60 FPS
-- **Responsive Throttling**: Adaptive rendering based on device capabilities
+- **Efficient Rendering**: Three.js optimizations for smooth 60 FPS
+- **Reduced Motion Support**: Respects user preferences for animations
+
+### Backend
+- **In-Memory Caching**: Node-cache with 24-hour TTL for API responses
+- **Rate Limiting**: Prevents abuse with configurable request limits
+- **Compression**: Gzip/Brotli compression for faster responses
+- **Request Logging**: Morgan middleware for development and production
+- **Security Headers**: Helmet.js for enhanced security
+
+## Development
+
+### Running with Docker
+
+```bash
+# Build and run all services
+docker-compose up --build
+
+# Run in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### Running Tests
+
+```bash
+# Frontend tests
+cd frontend
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Backend tests (if available)
+cd backend
+npm test
+```
+
+### Code Quality
+
+```bash
+# Run linter
+npm run lint
+
+# Format code with Prettier
+npm run format
+
+# Type checking (if using TypeScript)
+npm run type-check
+```
+
+## Deployment
+
+### Frontend (Vercel)
+The frontend is configured for Vercel deployment with automatic builds on push to main.
+
+### Backend (Render)
+The backend is configured for Render deployment with the included `render.yaml`.
+
+### Docker Deployment
+Use the provided Dockerfiles for containerized deployment to any platform.
+
+## API Documentation
+
+### Endpoints
+
+#### GET /api/exoplanets
+Fetch all confirmed exoplanets from NASA Exoplanet Archive.
+
+**Response:** Array of exoplanet objects with physical properties
+
+**Caching:** 24 hours
+
+**Rate Limit:** 100 requests per 15 minutes
+
+#### GET /api/planet/:name
+Get detailed information about a specific planet.
+
+**Parameters:**
+- `name` (string): Planet name (e.g., "Kepler-452b")
+
+**Response:** Single planet object with all available data
+
+#### GET /api/health
+Health check endpoint with cache statistics.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2024-10-28T10:00:00.000Z",
+  "environment": "production",
+  "cache": {
+    "keys": 15,
+    "hits": 234,
+    "misses": 12,
+    "hitRate": "95.12%"
+  }
+}
+```
+
+#### POST /api/cache/clear
+Clear the server cache (useful for development).
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Cache cleared successfully",
+  "keysDeleted": 15
+}
+```
+
+## Browser Support
+
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+- Opera 76+
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure your code:
+- Follows the existing code style
+- Includes appropriate tests
+- Updates documentation as needed
+- Passes all CI checks
+
+## Roadmap
+
+- [ ] Timeline visualization of exoplanet discoveries
+- [ ] Educational mode with guided tours
+- [ ] Statistics dashboard with charts
+- [ ] Multi-language support (i18n)
+- [ ] Advanced filters (habitable zone, discovery method)
+- [ ] 3D model exports (GLTF/OBJ)
+- [ ] Collaborative features (shared bookmarks)
 
 ## Credits
 
@@ -299,7 +458,25 @@ Planets are automatically classified based on their physical properties:
 - **3D Graphics**: [Three.js](https://threejs.org/)
 - **Frontend Framework**: [React](https://react.dev/)
 - **Backend**: [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
+- **Icons**: [Boxicons](https://boxicons.com/)
+- **Styling**: [Bootstrap](https://getbootstrap.com/)
 
 ## License
 
-MIT
+MIT License - see LICENSE file for details
+
+## Acknowledgments
+
+This project uses data from the NASA Exoplanet Archive, which is operated by the California Institute of Technology, under contract with NASA under the Exoplanet Exploration Program.
+
+## Support
+
+If you find this project helpful, please consider:
+- Starring the repository ⭐
+- Reporting bugs and suggesting features
+- Contributing code improvements
+- Sharing with others interested in space exploration
+
+---
+
+**Made with ❤️ for space enthusiasts and astronomy lovers**
