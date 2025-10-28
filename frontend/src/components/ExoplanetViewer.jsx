@@ -15,7 +15,7 @@ import { PanelManager } from '../lib/panel_manager';
 import { SearchCoordinator } from '../lib/search_coordinator';
 
 // NASA Exoplanet Archive API endpoint
-const EXOPLANET_API_ENDPOINT = 'http://localhost:3001/api/exoplanets';
+const EXOPLANET_API_ENDPOINT = 'http://localhost:5000/api/exoplanets';
 
 /**
  * Exoplanet Viewer Component
