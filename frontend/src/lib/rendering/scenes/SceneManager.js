@@ -264,13 +264,9 @@ export class SceneManager {
    * Setup post-processing effects (disabled on mobile for performance)
    */
   setupPostProcessing(width, height) {
-    // TEMPORARILY DISABLE post-processing to diagnose rendering issue
-    console.warn("⚠️ Post-processing disabled for debugging");
-    this.composer = null;
-    return;
-
     // Skip post-processing on mobile devices for better performance
     if (this.isMobileDevice) {
+      console.log("📱 Skipping post-processing on mobile device");
       this.composer = null;
       return;
     }
