@@ -1,0 +1,56 @@
+{
+  "name": "NASA Exoplanet Explorer",
+  "short_name": "Exoplanet Explorer",
+  "description": "Explore confirmed exoplanets from NASA's Exoplanet Archive in stunning 3D",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#667eea",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "science", "astronomy"],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Galaxy View",
+      "short_name": "Galaxy",
+      "description": "View all exoplanets in galaxy view",
+      "url": "/?mode=galaxy",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Bookmarks",
+      "short_name": "Favorites",
+      "description": "View your bookmarked planets",
+      "url": "/?tab=bookmarks",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
+
