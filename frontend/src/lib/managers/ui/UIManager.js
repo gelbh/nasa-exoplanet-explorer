@@ -295,7 +295,15 @@ export class UIManager {
       this.targets.loadingIndicator.classList.add("exoplanet-loading-hidden");
     }
     if (this.targets.canvasLoading) {
+      // Fade out the loading overlay
       this.targets.canvasLoading.classList.add("exoplanet-loading-hidden");
+
+      // Remove from DOM after animation
+      setTimeout(() => {
+        if (this.targets.canvasLoading) {
+          this.targets.canvasLoading.style.display = "none";
+        }
+      }, 500);
     }
   }
 

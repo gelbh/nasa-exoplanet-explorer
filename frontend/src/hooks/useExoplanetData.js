@@ -39,8 +39,26 @@ export const useExoplanetData = (apiEndpoint, uiRefs) => {
       (batchPlanets, allExoplanets) => {
         filterManagerRef.current.setExoplanets(allExoplanets);
 
+        // Update result count in search panel
         if (uiRefs.resultCountRef.current) {
           uiRefs.resultCountRef.current.textContent = `Loading... ${allExoplanets.length}`;
+        }
+
+        // Update loading count in canvas overlay
+        const loadCountElement = document.getElementById(
+          "exoplanet-load-count"
+        );
+        if (loadCountElement) {
+          loadCountElement.textContent = `${allExoplanets.length.toLocaleString()} planets loaded`;
+
+          // Update progress bar (assume 5000 total planets)
+          const progressBar = document.querySelector(
+            ".exoplanet-loading-bar-fill"
+          );
+          if (progressBar) {
+            const progress = Math.min((allExoplanets.length / 5000) * 100, 100);
+            progressBar.style.width = `${progress}%`;
+          }
         }
 
         // If this is the first batch, render galaxy
