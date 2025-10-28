@@ -1,0 +1,248 @@
+// ============================================
+// SCSS MIXINS
+// ============================================
+// Reusable style patterns
+
+// ============================================
+// GLASSMORPHISM EFFECTS
+// ============================================
+
+@mixin glassmorphism($opacity: 0.85, $blur: 20px) {
+  background: rgba(0, 0, 0, $opacity);
+  backdrop-filter: blur($blur);
+}
+
+@mixin glassmorphism-light($opacity: 0.1, $blur: 10px) {
+  background: rgba(255, 255, 255, $opacity);
+  backdrop-filter: blur($blur);
+}
+
+// ============================================
+// SCROLLBAR STYLING
+// ============================================
+
+@mixin custom-scrollbar($width: $scrollbar-width, $track-bg: $scrollbar-bg, $thumb-bg: $scrollbar-thumb) {
+  // Webkit browsers (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: $width;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track-bg;
+    border-radius: $radius-sm;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb-bg;
+    border-radius: $radius-sm;
+
+    &:hover {
+      background: $scrollbar-thumb-hover;
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: $thumb-bg $track-bg;
+}
+
+// ============================================
+// TRANSITIONS
+// ============================================
+
+@mixin transition($properties: all, $duration: $transition-normal, $easing: $easing-in-out) {
+  transition: $properties $duration $easing;
+}
+
+@mixin transition-multiple($transitions...) {
+  transition: $transitions;
+}
+
+// ============================================
+// RESPONSIVE BREAKPOINTS
+// ============================================
+
+@mixin respond-to-xs {
+  @media (max-width: $breakpoint-xs) {
+    @content;
+  }
+}
+
+@mixin respond-to-sm {
+  @media (max-width: $breakpoint-sm) {
+    @content;
+  }
+}
+
+@mixin respond-to-md {
+  @media (max-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+@mixin respond-to-lg {
+  @media (max-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+// ============================================
+// FLEX UTILITIES
+// ============================================
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// ============================================
+// PANEL STYLING
+// ============================================
+
+@mixin panel-overlay {
+  position: absolute;
+  z-index: $z-panels;
+  @include glassmorphism(0.85, 20px);
+  border-radius: $radius-2xl;
+  box-shadow: $shadow-lg, 0 0 0 1px $border-subtle;
+  color: $text-white;
+  @include transition-multiple(
+    transform $transition-slow $easing-standard,
+    opacity $transition-slow $easing-standard,
+    max-height $transition-slow $easing-standard
+  );
+  max-height: calc(100vh - 140px);
+  @include flex-column;
+}
+
+// ============================================
+// BUTTON HOVER EFFECTS
+// ============================================
+
+@mixin button-hover-lift {
+  @include transition(all, $transition-slow, $easing-standard);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+@mixin button-hover-scale($scale: 1.1) {
+  @include transition(transform, $transition-normal, $easing-standard);
+
+  &:hover {
+    transform: scale($scale);
+  }
+}
+
+// ============================================
+// TEXT UTILITIES
+// ============================================
+
+@mixin text-gradient($color1: $color-primary, $color2: $color-secondary) {
+  background: linear-gradient(135deg, $color1 0%, $color2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin truncate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ============================================
+// ANIMATIONS
+// ============================================
+
+@mixin keyframe-fade-in($name: fadeIn) {
+  @keyframes #{$name} {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@mixin keyframe-pulse($name: pulse) {
+  @keyframes #{$name} {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+}
+
+@mixin keyframe-rotate($name: rotate) {
+  @keyframes #{$name} {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+@mixin keyframe-spin($name: spin) {
+  @keyframes #{$name} {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// ============================================
+// FORM ELEMENTS
+// ============================================
+
+@mixin input-base {
+  font-size: 0.9rem;
+  background-color: $overlay-medium;
+  border: 1px solid $border-medium;
+  color: $text-white;
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 0.2rem rgba($color-primary, 0.25);
+    background-color: $overlay-medium;
+    color: $text-white;
+    outline: none;
+  }
+
+  &::placeholder {
+    color: $text-faint;
+  }
+}
+
+// ============================================
+// BADGE STYLING
+// ============================================
+
+@mixin badge-variant($bg-color, $opacity: 0.15) {
+  background-color: rgba($bg-color, $opacity) !important;
+  color: $bg-color;
+  border: 1px solid rgba($bg-color, 0.3);
+}
+
