@@ -60,6 +60,7 @@ const ExoplanetViewer = () => {
     planetRendererRef,
     systemRendererRef,
     galaxyRendererRef,
+    comparisonRendererRef,
     cameraManagerRef,
     raycasterRef,
     mouseRef,
@@ -394,7 +395,10 @@ const ExoplanetViewer = () => {
     }
 
     // Handle different view modes
-    if (viewModeRef.current === "planet") {
+    if (viewModeRef.current === "comparison") {
+      // Comparison view
+      comparisonRendererRef.current.update(0.016);
+    } else if (viewModeRef.current === "planet") {
       if (
         currentSystemRef.current &&
         systemRendererRef.current.systemPlanets.length > 0
@@ -579,6 +583,41 @@ const ExoplanetViewer = () => {
 
   const handleClearComparison = () => {
     setComparisonPlanets([]);
+    // Exit comparison view if active
+    if (viewModeRef.current === "comparison") {
+      switchToGalaxyView();
+    }
+  };
+
+  const handleViewComparisonIn3D = () => {
+    if (!comparisonPlanets || comparisonPlanets.length === 0) {
+      console.warn("No planets to compare");
+      return;
+    }
+
+    // Hide other renderers
+    if (galaxyRendererRef.current) {
+      galaxyRendererRef.current.cleanup();
+    }
+    if (systemRendererRef.current) {
+      systemRendererRef.current.cleanup();
+    }
+    if (planetRendererRef.current) {
+      planetRendererRef.current.cleanup();
+    }
+
+    // Setup comparison view
+    comparisonRendererRef.current.setupComparison(comparisonPlanets);
+    comparisonRendererRef.current.show();
+
+    // Update view mode
+    viewModeRef.current = "comparison";
+    setViewMode("comparison");
+
+    // Update settings visibility
+    if (settingsManagerRef.current?.updateSettingsVisibility) {
+      settingsManagerRef.current.updateSettingsVisibility("comparison");
+    }
   };
 
   // ============================================
@@ -652,10 +691,11 @@ const ExoplanetViewer = () => {
           // New props for Tools tab
           bookmarkManager={bookmarkManagerRef.current}
           comparisonPlanets={comparisonPlanets}
-          onAddToComparison={handleAddToComparison}
-          onRemoveFromComparison={handleRemoveFromComparison}
-          onClearComparison={handleClearComparison}
-          exportManager={exportManagerRef.current}
+                  onAddToComparison={handleAddToComparison}
+                  onRemoveFromComparison={handleRemoveFromComparison}
+                  onClearComparison={handleClearComparison}
+                  onViewComparisonIn3D={handleViewComparisonIn3D}
+                  exportManager={exportManagerRef.current}
           viewState={{
             mode: viewMode,
             planet: currentPlanet?.name,

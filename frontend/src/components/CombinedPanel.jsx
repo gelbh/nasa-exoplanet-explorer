@@ -25,6 +25,7 @@ const CombinedPanel = ({
   onAddToComparison,
   onRemoveFromComparison,
   onClearComparison,
+  onViewComparisonIn3D,
   exportManager,
   viewState,
   currentPlanet,
@@ -183,6 +184,7 @@ const CombinedPanel = ({
                 selectedPlanets={comparisonPlanets || []}
                 onRemovePlanet={onRemoveFromComparison}
                 onClearAll={onClearComparison}
+                onViewIn3D={onViewComparisonIn3D}
               />
 
               <hr className="my-4" style={{ borderColor: "rgba(255,255,255,0.2)" }} />

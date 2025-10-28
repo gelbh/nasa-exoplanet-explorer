@@ -4,7 +4,12 @@ import React, { useState } from "react";
  * Planet Comparison Tool Component
  * Allows users to compare multiple exoplanets side-by-side
  */
-const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) => {
+const ComparisonTool = ({
+  selectedPlanets = [],
+  onRemovePlanet,
+  onClearAll,
+  onViewIn3D,
+}) => {
   const [showEarth, setShowEarth] = useState(true);
 
   // Earth reference data
@@ -82,20 +87,33 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
             </label>
           </div>
           {selectedPlanets.length > 0 && (
-            <button
-              className="btn btn-sm btn-outline-danger"
-              onClick={onClearAll}
-              aria-label="Clear all planets from comparison"
-            >
-              <i className="bx bx-trash"></i> Clear
-            </button>
+            <>
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={onViewIn3D}
+                aria-label="View comparison in 3D"
+                title="View these planets side-by-side in 3D"
+              >
+                <i className="bx bx-cube"></i> View in 3D
+              </button>
+              <button
+                className="btn btn-sm btn-outline-danger"
+                onClick={onClearAll}
+                aria-label="Clear all planets from comparison"
+              >
+                <i className="bx bx-trash"></i> Clear
+              </button>
+            </>
           )}
         </div>
       </div>
 
       {planetsToCompare.length === 0 ? (
         <div className="text-center text-muted py-4">
-          <i className="bx bx-bar-chart-square" style={{ fontSize: "3rem" }}></i>
+          <i
+            className="bx bx-bar-chart-square"
+            style={{ fontSize: "3rem" }}
+          ></i>
           <p className="mb-0 mt-2">No planets to compare</p>
           <small>Select planets to add them to comparison</small>
         </div>
@@ -106,9 +124,9 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
             <label className="form-label text-white fw-semibold mb-3">
               Visual Size Comparison
             </label>
-            <div 
-              className="visual-comparison p-4 rounded" 
-              style={{ 
+            <div
+              className="visual-comparison p-4 rounded"
+              style={{
                 background: "rgba(0, 0, 0, 0.3)",
                 minHeight: "200px",
                 display: "flex",
@@ -116,23 +134,25 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                 justifyContent: "center",
                 gap: "20px",
                 flexWrap: "wrap",
-                position: "relative"
+                position: "relative",
               }}
             >
               {planetsToCompare.map((planet, index) => {
-                const maxRadius = Math.max(...planetsToCompare.map(p => p.radius));
+                const maxRadius = Math.max(
+                  ...planetsToCompare.map((p) => p.radius)
+                );
                 const scale = Math.min(1, planet.radius / maxRadius);
-                const size = 40 + (scale * 120); // 40px to 160px
-                
+                const size = 40 + scale * 120; // 40px to 160px
+
                 return (
-                  <div 
+                  <div
                     key={index}
                     className="planet-visual text-center"
-                    style={{ 
+                    style={{
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
-                      gap: "10px"
+                      gap: "10px",
                     }}
                   >
                     <div
@@ -141,16 +161,26 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                         width: `${size}px`,
                         height: `${size}px`,
                         borderRadius: "50%",
-                        background: `radial-gradient(circle at 30% 30%, ${getTypeColor(planet.type)}dd, ${getTypeColor(planet.type)}44)`,
-                        boxShadow: `0 4px 20px ${getTypeColor(planet.type)}66, inset -10px -10px 20px rgba(0,0,0,0.3)`,
+                        background: `radial-gradient(circle at 30% 30%, ${getTypeColor(
+                          planet.type
+                        )}dd, ${getTypeColor(planet.type)}44)`,
+                        boxShadow: `0 4px 20px ${getTypeColor(
+                          planet.type
+                        )}66, inset -10px -10px 20px rgba(0,0,0,0.3)`,
                         border: `2px solid ${getTypeColor(planet.type)}`,
                         position: "relative",
                         transition: "transform 0.3s ease",
-                        cursor: "pointer"
+                        cursor: "pointer",
                       }}
-                      title={`${planet.name}: ${formatNumber(planet.radius)} R⊕`}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                      title={`${planet.name}: ${formatNumber(
+                        planet.radius
+                      )} R⊕`}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.transform = "scale(1.1)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.transform = "scale(1)")
+                      }
                     >
                       {/* Shine effect */}
                       <div
@@ -161,16 +191,23 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                           width: "30%",
                           height: "30%",
                           borderRadius: "50%",
-                          background: "radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)",
-                          pointerEvents: "none"
+                          background:
+                            "radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)",
+                          pointerEvents: "none",
                         }}
                       />
                     </div>
                     <div className="planet-label">
-                      <div className="text-white fw-semibold" style={{ fontSize: "0.8rem" }}>
+                      <div
+                        className="text-white fw-semibold"
+                        style={{ fontSize: "0.8rem" }}
+                      >
                         {planet.name}
                       </div>
-                      <div className="text-white-50" style={{ fontSize: "0.7rem" }}>
+                      <div
+                        className="text-white-50"
+                        style={{ fontSize: "0.7rem" }}
+                      >
                         {formatNumber(planet.radius)} R⊕
                       </div>
                     </div>
@@ -180,7 +217,8 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
             </div>
             <div className="text-center mt-2">
               <small className="text-white-50">
-                <i className="bx bx-info-circle"></i> Planet sizes scaled by radius (hover to see details)
+                <i className="bx bx-info-circle"></i> Planet sizes scaled by
+                radius (hover to see details)
               </small>
             </div>
           </div>
@@ -211,16 +249,15 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                       )}
                     </div>
                     <span
-                      className={`badge ${getTypeBadgeClass(
-                        planet.type
-                      )} mb-2`}
+                      className={`badge ${getTypeBadgeClass(planet.type)} mb-2`}
                       style={{ fontSize: "0.7rem" }}
                     >
                       {planet.type}
                     </span>
                     <div className="small">
                       <div className="mb-1">
-                        <i className="bx bx-sun me-1"></i> {planet.hostStar || "Unknown"}
+                        <i className="bx bx-sun me-1"></i>{" "}
+                        {planet.hostStar || "Unknown"}
                       </div>
                       {planet.distance > 0 && (
                         <div className="mb-1">
@@ -252,7 +289,10 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                   </div>
                   <div
                     className="progress"
-                    style={{ height: "20px", background: "rgba(255,255,255,0.1)" }}
+                    style={{
+                      height: "20px",
+                      background: "rgba(255,255,255,0.1)",
+                    }}
                   >
                     <div
                       className="progress-bar"
@@ -264,7 +304,9 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                       aria-valuenow={planet.radius}
                       aria-valuemin="0"
                       aria-valuemax={getMaxValue("radius")}
-                      aria-label={`${planet.name} radius: ${formatNumber(planet.radius)} Earth radii`}
+                      aria-label={`${planet.name} radius: ${formatNumber(
+                        planet.radius
+                      )} Earth radii`}
                     ></div>
                   </div>
                 </div>
@@ -286,7 +328,10 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                   </div>
                   <div
                     className="progress"
-                    style={{ height: "20px", background: "rgba(255,255,255,0.1)" }}
+                    style={{
+                      height: "20px",
+                      background: "rgba(255,255,255,0.1)",
+                    }}
                   >
                     <div
                       className="progress-bar"
@@ -298,7 +343,9 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                       aria-valuenow={planet.mass}
                       aria-valuemin="0"
                       aria-valuemax={getMaxValue("mass")}
-                      aria-label={`${planet.name} mass: ${formatNumber(planet.mass)} Earth masses`}
+                      aria-label={`${planet.name} mass: ${formatNumber(
+                        planet.mass
+                      )} Earth masses`}
                     ></div>
                   </div>
                 </div>
@@ -320,21 +367,31 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                   </div>
                   <div
                     className="progress"
-                    style={{ height: "20px", background: "rgba(255,255,255,0.1)" }}
+                    style={{
+                      height: "20px",
+                      background: "rgba(255,255,255,0.1)",
+                    }}
                   >
                     <div
                       className="progress-bar"
                       style={{
-                        width: `${getBarWidth(planet.temperature, "temperature")}%`,
-                        background: `hsl(${
-                          Math.min(planet.temperature / 10, 360)
-                        }, 70%, 50%)`,
+                        width: `${getBarWidth(
+                          planet.temperature,
+                          "temperature"
+                        )}%`,
+                        background: `hsl(${Math.min(
+                          planet.temperature / 10,
+                          360
+                        )}, 70%, 50%)`,
                       }}
                       role="progressbar"
                       aria-valuenow={planet.temperature}
                       aria-valuemin="0"
                       aria-valuemax={getMaxValue("temperature")}
-                      aria-label={`${planet.name} temperature: ${formatNumber(planet.temperature, 0)} Kelvin`}
+                      aria-label={`${planet.name} temperature: ${formatNumber(
+                        planet.temperature,
+                        0
+                      )} Kelvin`}
                     ></div>
                   </div>
                 </div>
@@ -368,13 +425,19 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
                         <div
                           className="progress-bar bg-info"
                           style={{
-                            width: `${getBarWidth(planet.distance, "distance")}%`,
+                            width: `${getBarWidth(
+                              planet.distance,
+                              "distance"
+                            )}%`,
                           }}
                           role="progressbar"
                           aria-valuenow={planet.distance}
                           aria-valuemin="0"
                           aria-valuemax={getMaxValue("distance")}
-                          aria-label={`${planet.name} distance: ${formatNumber(planet.distance, 1)} light-years`}
+                          aria-label={`${planet.name} distance: ${formatNumber(
+                            planet.distance,
+                            1
+                          )} light-years`}
                         ></div>
                       </div>
                     )}
@@ -410,4 +473,3 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
 };
 
 export default ComparisonTool;
-

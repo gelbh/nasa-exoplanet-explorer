@@ -1,0 +1,191 @@
+// ============================================
+// EXOPLANET VIEWER MAIN CONTAINER
+// ============================================
+
+.exoplanet-viewer-page {
+  // Ensure full-height layout
+  min-height: 100vh;
+
+  // 3D Canvas container
+  .bg-dark {
+    canvas {
+      display: block;
+      outline: none;
+    }
+  }
+
+  // Smooth transitions
+  * {
+    transition-property: background-color, border-color, color, transform;
+    transition-duration: $transition-normal;
+    transition-timing-function: $easing-in-out;
+  }
+}
+
+// ============================================
+// FULL-SCREEN VIEWER LAYOUT
+// ============================================
+
+.exoplanet-fullscreen-viewer {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  overflow: hidden;
+}
+
+.exoplanet-canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: $z-canvas;
+}
+
+.exoplanet-threejs-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  canvas {
+    display: block;
+    outline: none;
+  }
+}
+
+// ============================================
+// CUSTOM CURSORS (CANVAS ONLY)
+// ============================================
+
+.exoplanet-viewer-page {
+  // Default cursor for canvas only
+  canvas {
+    cursor: $cursor-default;
+    @include transition(cursor, 0.1s, $easing-standard);
+
+    // Grabbing state (when actively dragging to rotate)
+    &.grabbing {
+      cursor: $cursor-grabbing !important;
+    }
+
+    // Grab state (when hovering, ready to rotate)
+    &.grab {
+      cursor: $cursor-grab;
+    }
+
+    // Pointer state (when hovering over clickable planet)
+    &.pointer {
+      cursor: $cursor-pointer;
+    }
+
+    // Move state (when right-click panning)
+    &.moving {
+      cursor: $cursor-move !important;
+    }
+  }
+
+  // Keep default cursors for UI elements outside canvas
+  .btn,
+  button,
+  .list-group-item,
+  input[type="range"] {
+    cursor: pointer;
+  }
+
+  input[type="range"]:active {
+    cursor: grabbing;
+  }
+}
+
+// ============================================
+// FULLSCREEN MODE STYLES
+// ============================================
+
+.exoplanet-fullscreen-viewer:fullscreen,
+.exoplanet-fullscreen-viewer:-webkit-full-screen,
+.exoplanet-fullscreen-viewer:-moz-full-screen,
+.exoplanet-fullscreen-viewer:-ms-fullscreen {
+  // Ensure the container itself maintains proper positioning context
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+
+  // Ensure panels remain visible and properly styled in fullscreen
+  .exoplanet-overlay-panel {
+    position: absolute;
+    z-index: $z-overlay;
+    display: flex;
+  }
+
+  .exoplanet-controls-overlay {
+    position: absolute;
+    z-index: $z-overlay;
+  }
+
+  .exoplanet-instructions-overlay {
+    position: absolute;
+    z-index: $z-overlay;
+  }
+
+  // Adjust panel max-height for fullscreen to use full viewport
+  .exoplanet-combined-panel {
+    max-height: calc(100vh - 140px);
+  }
+
+  // Ensure canvas container doesn't block panels
+  .exoplanet-canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: $z-canvas;
+  }
+}
+
+// ============================================
+// VIEW MODE TRANSITIONS
+// ============================================
+
+.exoplanet-viewer-page {
+  [data-exoplanet-viewer-target="planetDetails"],
+  [data-exoplanet-viewer-target="systemDetails"],
+  [data-exoplanet-viewer-target="planetInfo"] {
+    @include transition-multiple(
+      opacity $transition-slow $easing-standard,
+      display 0s $transition-slow
+    );
+
+    &[style*="display: none"] {
+      opacity: 0;
+    }
+
+    &[style*="display: block"] {
+      opacity: 1;
+      transition: opacity $transition-slow $easing-standard;
+    }
+  }
+}
+
+// ============================================
+// MISC VIEWER ELEMENTS
+// ============================================
+
+// About section styling
+.exoplanet-viewer-page + section,
+.exoplanet-viewer-page section:last-child {
+  .rounded-circle {
+    @include transition(transform, $transition-slow, $easing-standard);
+  }
+
+  .col-md-4:hover .rounded-circle {
+    transform: scale(1.1);
+  }
+}
+
+// Hide loading indicators
+.exoplanet-loading-hidden {
+  display: none !important;
+}

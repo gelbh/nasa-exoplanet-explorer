@@ -1,0 +1,235 @@
+// ============================================
+// CONTROLS AND INSTRUCTIONS OVERLAYS
+// ============================================
+
+.exoplanet-controls-overlay {
+  position: absolute;
+  bottom: $spacing-xl;
+  left: $spacing-xl;
+  z-index: $z-controls;
+  padding: $spacing-lg;
+  @include glassmorphism(0.75, 15px);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+  max-width: calc(100% - 40px);
+
+  .btn-outline-light {
+    backdrop-filter: blur(10px);
+    border-color: $border-strong;
+
+    &:hover {
+      background-color: $overlay-medium;
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    &.active {
+      background-color: $color-primary;
+      border-color: $color-primary;
+      color: $text-white;
+    }
+  }
+
+  .form-check-label {
+    color: $text-white;
+  }
+}
+
+.exoplanet-instructions-overlay {
+  position: absolute;
+  top: $spacing-xl;
+  right: $spacing-xl;
+  z-index: $z-controls;
+  padding: $spacing-lg;
+  @include glassmorphism(0.75, 15px);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+  max-width: 280px;
+  color: $text-white;
+  font-size: 0.875rem;
+
+  // Keep in top right on larger screens
+  @media (min-width: 992px) {
+    top: $spacing-xl;
+  }
+
+  strong {
+    font-size: 1rem;
+  }
+
+  div {
+    margin-top: $spacing-sm;
+
+    i {
+      margin-right: $spacing-sm;
+      opacity: 0.8;
+    }
+  }
+}
+
+// ============================================
+// CONTROL BUTTONS
+// ============================================
+
+.exoplanet-viewer-page {
+  .btn-outline-light {
+    backdrop-filter: blur(10px);
+    border-color: $border-strong;
+
+    &:hover {
+      background-color: $overlay-medium;
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    &.active {
+      background-color: $color-primary;
+      border-color: $color-primary;
+      color: $text-white;
+    }
+  }
+
+  // Instructions overlay
+  .bg-dark.bg-opacity-75 {
+    backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.6) !important;
+  }
+}
+
+// ============================================
+// VIEW MODE TOGGLES
+// ============================================
+
+.btn-group {
+  .btn-check:checked + .btn-outline-primary {
+    background-color: $color-primary;
+    border-color: $color-primary;
+    color: $text-white;
+    font-weight: 600;
+  }
+
+  .btn-outline-primary {
+    @include transition(all, $transition-slow, $easing-standard);
+
+    i {
+      @include transition(transform, $transition-slow, $easing-standard);
+    }
+
+    &:hover i {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Highlight current view mode in toggle
+input[name="viewMode"]:checked + label {
+  box-shadow: 0 0 0 0.2rem rgba($color-primary, 0.25);
+}
+
+// ============================================
+// SYSTEM LIST ITEMS
+// ============================================
+
+.list-group-item {
+  .bx-planet {
+    color: $color-primary;
+    font-size: 1.2rem;
+    vertical-align: middle;
+  }
+
+  &.active .bx-planet {
+    color: $text-white;
+  }
+}
+
+// ============================================
+// SYSTEM DETAILS PANEL
+// ============================================
+
+[data-exoplanet-viewer-target="systemDetails"] {
+  animation: fadeIn $transition-slow $easing-standard;
+
+  h5 {
+    @include flex-center;
+    gap: 0.5rem;
+
+    .bx-sun {
+      color: $color-warning;
+      font-size: 1.5rem;
+      animation: pulse 2s $easing-in-out infinite;
+    }
+  }
+
+  .alert-info {
+    border-left: 4px solid $color-info;
+  }
+}
+
+// Random system button
+#randomSystemBtn {
+  animation: fadeIn $transition-slow $easing-standard;
+}
+
+// Fullscreen button icon animation
+.btn-outline-light {
+  .bx-fullscreen {
+    @include transition(transform, $transition-slow, $easing-standard);
+  }
+
+  &:hover .bx-fullscreen {
+    transform: scale(1.1);
+  }
+}
+
+// ============================================
+// KEYFRAME ANIMATIONS
+// ============================================
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ============================================
+// RESPONSIVE CONTROLS
+// ============================================
+
+@include respond-to-md {
+  .exoplanet-instructions-overlay {
+    display: none; // Hide instructions on tablet/mobile to save space
+  }
+}
+
+@include respond-to-xs {
+  .exoplanet-controls-overlay {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    max-width: calc(100% - 20px);
+
+    .d-flex {
+      flex-wrap: wrap;
+      gap: $spacing-sm !important;
+
+      .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+  }
+}
+

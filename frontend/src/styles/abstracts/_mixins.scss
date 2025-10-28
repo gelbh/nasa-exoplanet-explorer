@@ -21,7 +21,11 @@
 // SCROLLBAR STYLING
 // ============================================
 
-@mixin custom-scrollbar($width: $scrollbar-width, $track-bg: $scrollbar-bg, $thumb-bg: $scrollbar-thumb) {
+@mixin custom-scrollbar(
+  $width: $scrollbar-width,
+  $track-bg: $scrollbar-bg,
+  $thumb-bg: $scrollbar-thumb
+) {
   // Webkit browsers (Chrome, Safari, Edge)
   &::-webkit-scrollbar {
     width: $width;
@@ -50,7 +54,11 @@
 // TRANSITIONS
 // ============================================
 
-@mixin transition($properties: all, $duration: $transition-normal, $easing: $easing-in-out) {
+@mixin transition(
+  $properties: all,
+  $duration: $transition-normal,
+  $easing: $easing-in-out
+) {
   transition: $properties $duration $easing;
 }
 
@@ -245,4 +253,3 @@
   color: $bg-color;
   border: 1px solid rgba($bg-color, 0.3);
 }
-

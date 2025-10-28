@@ -4,6 +4,7 @@ import { SceneManager } from "../lib/rendering/scenes/SceneManager.js";
 import { PlanetRenderer } from "../lib/rendering/planets/PlanetRenderer.js";
 import { SystemRenderer } from "../lib/rendering/scenes/SystemRenderer.js";
 import { GalaxyRenderer } from "../lib/rendering/scenes/GalaxyRenderer.js";
+import { ComparisonRenderer } from "../lib/rendering/scenes/ComparisonRenderer.js";
 import { CameraManager } from "../lib/managers/interactions/CameraManager.js";
 
 /**
@@ -15,6 +16,7 @@ export const useThreeJSScene = (canvasRef, canvasLoadingRef) => {
   const planetRendererRef = useRef(null);
   const systemRendererRef = useRef(null);
   const galaxyRendererRef = useRef(null);
+  const comparisonRendererRef = useRef(null);
   const cameraManagerRef = useRef(null);
   const raycasterRef = useRef(null);
   const mouseRef = useRef(null);
@@ -37,6 +39,10 @@ export const useThreeJSScene = (canvasRef, canvasLoadingRef) => {
     );
     galaxyRendererRef.current = new GalaxyRenderer(
       sceneManagerRef.current.scene
+    );
+    comparisonRendererRef.current = new ComparisonRenderer(
+      sceneManagerRef.current.scene,
+      sceneManagerRef.current.camera
     );
 
     // Initialize camera manager now that sceneManager is ready
@@ -90,6 +96,7 @@ export const useThreeJSScene = (canvasRef, canvasLoadingRef) => {
     planetRendererRef,
     systemRendererRef,
     galaxyRendererRef,
+    comparisonRendererRef,
     cameraManagerRef,
     raycasterRef,
     mouseRef,

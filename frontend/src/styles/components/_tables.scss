@@ -1,0 +1,143 @@
+// ============================================
+// TABLE STYLING
+// ============================================
+
+.exoplanet-viewer-page {
+  // Info panel tables
+  .table {
+    td {
+      padding: 0.5rem 0.25rem;
+      border-bottom: 1px solid var(--bs-gray-200);
+
+      &:first-child {
+        width: 40%;
+      }
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  // Left and right panel scrolling
+  .bg-light {
+    &[style*="height"] {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    // Ensure proper text colors in light panels
+    h5,
+    h6 {
+      color: var(--bs-body-color);
+    }
+
+    .text-muted {
+      color: var(--bs-secondary-color) !important;
+    }
+  }
+}
+
+// ============================================
+// SYSTEM COMPARISON TABLE
+// ============================================
+
+.table-responsive {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+
+  .table {
+    margin-bottom: 0;
+
+    thead {
+      position: sticky;
+      top: 0;
+      background-color: var(--bs-light);
+      z-index: 1;
+      box-shadow: 0 2px 4px $overlay-dark;
+
+      th {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 2px solid var(--bs-border-color);
+        white-space: nowrap;
+      }
+    }
+
+    tbody {
+      tr {
+        @include transition(background-color, $transition-normal, $easing-standard);
+
+        &:hover {
+          background-color: rgba($color-primary, 0.05);
+        }
+
+        td {
+          font-size: 0.85rem;
+          padding: 0.6rem 0.5rem;
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+}
+
+// Enhanced table striping
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(var(--bs-light-rgb), 0.5);
+}
+
+// ============================================
+// SCROLLBAR STYLING FOR PANELS
+// ============================================
+
+.exoplanet-viewer-page {
+  [style*="overflow-y: auto"] {
+    @include custom-scrollbar;
+  }
+}
+
+// ============================================
+// ALERTS
+// ============================================
+
+.exoplanet-viewer-page {
+  .alert {
+    border: none;
+    border-radius: 0.5rem;
+
+    &.alert-info {
+      background-color: rgba($color-info, 0.1);
+      color: var(--bs-info-text-emphasis);
+    }
+
+    &.alert-warning {
+      background-color: rgba($color-warning, 0.1);
+      color: var(--bs-warning-text-emphasis);
+    }
+  }
+}
+
+// ============================================
+// LOADING SPINNER
+// ============================================
+
+.exoplanet-viewer-page {
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3rem;
+  }
+
+  // Empty state
+  .text-center.py-5 {
+    .bx {
+      font-size: 4rem;
+    }
+  }
+}
+
