@@ -40,6 +40,11 @@ const ExoplanetViewer = () => {
   // Comparison tool state
   const [comparisonPlanets, setComparisonPlanets] = useState([]);
 
+  // Track current planet/system for Tools tab (state for re-rendering)
+  const [currentPlanet, setCurrentPlanet] = useState(null);
+  const [currentSystem, setCurrentSystem] = useState(null);
+  const [viewMode, setViewMode] = useState("galaxy");
+
   // Managers for new features
   const bookmarkManagerRef = useRef(null);
   const exportManagerRef = useRef(null);
@@ -150,6 +155,23 @@ const ExoplanetViewer = () => {
       selectPlanet.switchToInfoTab = switchToInfoTab;
     }
   }, [updateInfoTab, switchToInfoTab, selectPlanet]);
+
+  // Sync ref values to state for Tools tab re-rendering
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (currentPlanetRef.current !== currentPlanet) {
+        setCurrentPlanet(currentPlanetRef.current);
+      }
+      if (currentSystemRef.current !== currentSystem) {
+        setCurrentSystem(currentSystemRef.current);
+      }
+      if (viewModeRef.current !== viewMode) {
+        setViewMode(viewModeRef.current);
+      }
+    }, 100); // Check every 100ms
+
+    return () => clearInterval(interval);
+  }, [currentPlanet, currentSystem, viewMode]);
 
   // ============================================
   // CUSTOM HOOKS - CANVAS INTERACTION
@@ -619,11 +641,11 @@ const ExoplanetViewer = () => {
           onClearComparison={handleClearComparison}
           exportManager={exportManagerRef.current}
           viewState={{
-            mode: viewModeRef.current,
-            planet: currentPlanetRef.current?.name,
-            system: currentSystemRef.current?.hostStar,
+            mode: viewMode,
+            planet: currentPlanet?.name,
+            system: currentSystem?.hostStar,
           }}
-          currentPlanet={currentPlanetRef.current}
+          currentPlanet={currentPlanet}
           onPlanetSelect={selectPlanet}
           onSystemSelect={selectSystem}
         />
