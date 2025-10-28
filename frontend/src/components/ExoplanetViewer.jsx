@@ -1,18 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { SceneManager } from '../lib/scene_manager';
-import { PlanetRenderer } from '../lib/planet_renderer';
-import { SystemRenderer } from '../lib/system_renderer';
-import { GalaxyRenderer } from '../lib/galaxy_renderer';
-import { ApiManager } from '../lib/api_manager';
-import { FilterManager } from '../lib/filter_manager';
-import { UIManager } from '../lib/ui_manager';
-import { TooltipManager } from '../lib/tooltip_manager';
-import { SettingsManager } from '../lib/settings_manager';
-import { CameraManager } from '../lib/camera_manager';
-import { InfoTabManager } from '../lib/info_tab_manager';
-import { PanelManager } from '../lib/panel_manager';
-import { SearchCoordinator } from '../lib/search_coordinator';
+import { SceneManager } from '../lib/SceneManager';
+import { PlanetRenderer } from '../lib/PlanetRenderer';
+import { SystemRenderer } from '../lib/SystemRenderer';
+import { GalaxyRenderer } from '../lib/GalaxyRenderer';
+import { ApiManager } from '../lib/ApiManager';
+import { FilterManager } from '../lib/FilterManager';
+import { UIManager } from '../lib/UIManager';
+import { TooltipManager } from '../lib/TooltipManager';
+import { SettingsManager } from '../lib/SettingsManager';
+import { CameraManager } from '../lib/CameraManager';
+import { InfoTabManager } from '../lib/InfoTabManager';
+import { PanelManager } from '../lib/PanelManager';
+import { SearchCoordinator } from '../lib/SearchCoordinator';
 
 // NASA Exoplanet Archive API endpoint
 const EXOPLANET_API_ENDPOINT = 'http://localhost:5000/api/exoplanets';
