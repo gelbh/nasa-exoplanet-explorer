@@ -1,7 +1,6 @@
 import React from "react";
 import CanvasControls from "./CanvasControls";
 import InstructionsOverlay from "./InstructionsOverlay";
-import "../styles/LoadingIndicator.css";
 
 /**
  * Canvas Container Component

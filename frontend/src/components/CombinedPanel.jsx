@@ -165,7 +165,10 @@ const CombinedPanel = ({
                 onRemoveFromComparison={onRemoveFromComparison}
               />
 
-              <hr className="my-4" style={{ borderColor: "rgba(255,255,255,0.2)" }} />
+              <hr
+                className="my-4"
+                style={{ borderColor: "rgba(255,255,255,0.2)" }}
+              />
 
               {/* Bookmarks Section */}
               {bookmarkManager && (
@@ -175,7 +178,10 @@ const CombinedPanel = ({
                     onPlanetSelect={onPlanetSelect}
                     onSystemSelect={onSystemSelect}
                   />
-                  <hr className="my-4" style={{ borderColor: "rgba(255,255,255,0.2)" }} />
+                  <hr
+                    className="my-4"
+                    style={{ borderColor: "rgba(255,255,255,0.2)" }}
+                  />
                 </>
               )}
 
@@ -187,7 +193,10 @@ const CombinedPanel = ({
                 onViewIn3D={onViewComparisonIn3D}
               />
 
-              <hr className="my-4" style={{ borderColor: "rgba(255,255,255,0.2)" }} />
+              <hr
+                className="my-4"
+                style={{ borderColor: "rgba(255,255,255,0.2)" }}
+              />
 
               {/* Share & Export Section */}
               {exportManager && (

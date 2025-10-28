@@ -16,30 +16,42 @@ export class ComparisonRenderer {
     this.planets = [];
     this.labelSprites = [];
     this.animationFrameCount = 0;
+    this.comparisonLight = null;
+    this.ambientLight = null;
   }
 
   /**
    * Set up comparison view with multiple planets
    */
   setupComparison(planetsData) {
+    console.log("🌍 Setting up comparison with planets:", planetsData);
+    
     // Clear existing comparison
     this.clearComparison();
 
     if (!planetsData || planetsData.length === 0) {
+      console.warn("No planets data provided for comparison");
       return;
     }
 
+    // Add lighting for comparison view
+    this.setupLighting();
+
     // Calculate spacing based on largest planet
     const maxRadius = Math.max(...planetsData.map((p) => p.radius || 1));
-    const spacing = maxRadius * 3; // Space between planets
+    const spacing = Math.max(maxRadius * 3, 5); // Space between planets, minimum 5 units
 
     // Calculate total width to center the group
     const totalWidth = (planetsData.length - 1) * spacing;
     const startX = -totalWidth / 2;
 
+    console.log(`📐 Max radius: ${maxRadius}, Spacing: ${spacing}, Total width: ${totalWidth}`);
+
     // Create each planet
     planetsData.forEach((planetData, index) => {
       const xPosition = startX + index * spacing;
+      
+      console.log(`Creating planet ${index}: ${planetData.name} at x=${xPosition}`);
       
       // Create planet mesh
       const planetMesh = this.planetRenderer.createPlanetMesh(
@@ -57,12 +69,14 @@ export class ComparisonRenderer {
         
         this.comparisonGroup.add(planetMesh);
         this.planets.push(planetMesh);
+        console.log(`✅ Added planet mesh for ${planetData.name}`);
 
         // Add atmosphere if applicable
         const atmosphere = this.planetRenderer.createAtmosphere(planetData);
         if (atmosphere) {
           atmosphere.position.set(xPosition, 0, 0);
           this.comparisonGroup.add(atmosphere);
+          console.log(`💨 Added atmosphere for ${planetData.name}`);
         }
 
         // Add rings if it's a gas giant
@@ -71,17 +85,49 @@ export class ComparisonRenderer {
           if (rings) {
             rings.position.set(xPosition, 0, 0);
             this.comparisonGroup.add(rings);
+            console.log(`💍 Added rings for ${planetData.name}`);
           }
         }
 
         // Add label
         this.createLabel(planetData.name, xPosition, planetData.radius);
+      } else {
+        console.error(`❌ Failed to create mesh for ${planetData.name}`);
       }
     });
 
     // Position group and camera for best view
     this.comparisonGroup.position.set(0, 0, 0);
     this.positionCameraForComparison(maxRadius, planetsData.length);
+    
+    console.log(`📹 Camera positioned. Group has ${this.comparisonGroup.children.length} children`);
+    console.log(`🎭 Comparison group visible: ${this.comparisonGroup.visible}`);
+  }
+
+  /**
+   * Set up lighting for comparison view
+   */
+  setupLighting() {
+    // Remove old lights if they exist
+    if (this.comparisonLight) {
+      this.scene.remove(this.comparisonLight);
+    }
+    if (this.ambientLight) {
+      this.scene.remove(this.ambientLight);
+    }
+
+    // Add directional light from the front
+    this.comparisonLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    this.comparisonLight.position.set(0, 5, 10);
+    this.comparisonLight.name = "ComparisonLight";
+    this.scene.add(this.comparisonLight);
+
+    // Add ambient light for overall illumination
+    this.ambientLight = new THREE.AmbientLight(0x404040, 1.5);
+    this.ambientLight.name = "ComparisonAmbient";
+    this.scene.add(this.ambientLight);
+
+    console.log("💡 Comparison lighting set up");
   }
 
   /**
@@ -124,7 +170,7 @@ export class ComparisonRenderer {
       depthWrite: false,
     });
     const sprite = new THREE.Sprite(spriteMaterial);
-    
+
     // Position below planet
     const labelY = -(planetRadius + 2);
     sprite.position.set(x, labelY, 0);
@@ -138,11 +184,20 @@ export class ComparisonRenderer {
    * Position camera to frame all planets
    */
   positionCameraForComparison(maxRadius, planetCount) {
-    const totalWidth = (planetCount - 1) * (maxRadius * 3);
-    const distance = Math.max(totalWidth * 0.8, maxRadius * 5);
+    const spacing = Math.max(maxRadius * 3, 5);
+    const totalWidth = (planetCount - 1) * spacing;
+    const distance = Math.max(totalWidth * 0.8, maxRadius * 5, 15);
+    
+    console.log(`📷 Positioning camera: distance=${distance}, looking at (0, 0, 0)`);
     
     this.camera.position.set(0, maxRadius * 1.5, distance);
     this.camera.lookAt(0, 0, 0);
+    
+    // Update camera if there are controls
+    if (this.camera.parent && this.camera.parent.controls) {
+      this.camera.parent.controls.target.set(0, 0, 0);
+      this.camera.parent.controls.update();
+    }
   }
 
   /**
@@ -172,6 +227,8 @@ export class ComparisonRenderer {
    * Clear comparison view
    */
   clearComparison() {
+    console.log("🧹 Clearing comparison view");
+    
     // Remove all children from comparison group
     while (this.comparisonGroup.children.length > 0) {
       const child = this.comparisonGroup.children[0];
@@ -188,6 +245,16 @@ export class ComparisonRenderer {
           child.material.dispose();
         }
       }
+    }
+
+    // Remove lights
+    if (this.comparisonLight) {
+      this.scene.remove(this.comparisonLight);
+      this.comparisonLight = null;
+    }
+    if (this.ambientLight) {
+      this.scene.remove(this.ambientLight);
+      this.ambientLight = null;
     }
 
     this.planets = [];
@@ -230,4 +297,3 @@ export class ComparisonRenderer {
     this.scene.remove(this.comparisonGroup);
   }
 }
-

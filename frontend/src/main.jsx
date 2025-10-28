@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'boxicons/css/boxicons.min.css'
 import './index.css'
-import './styles/accessibility.css'
+import './styles/main.scss'
 import App from './App.jsx'
 import { isUsingKeyboard } from './utils/accessibility'
 

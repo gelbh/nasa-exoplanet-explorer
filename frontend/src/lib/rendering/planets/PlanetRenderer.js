@@ -70,6 +70,94 @@ export class PlanetRenderer {
   }
 
   /**
+   * Create a planet mesh without adding to scene (for comparison view)
+   * @param {Object} planetData - Planet data object
+   * @param {boolean} addToScene - Whether to add to scene (default false)
+   * @returns {THREE.Mesh|null} The created planet mesh
+   */
+  createPlanetMesh(planetData, addToScene = false) {
+    const radius = Math.max(0.5, Math.min(3, planetData.radius * 0.5));
+    const geometry = new THREE.SphereGeometry(radius, 64, 64);
+
+    // Prepare star information for realistic rendering
+    const starPosition = new THREE.Vector3(5, 3, 5);
+    const starColor = this.getStarColorVector(planetData);
+    const starIntensity = 2.0 + (planetData.stellarLuminosity || 0) * 0.3;
+
+    // Generate material with realistic physics
+    const material = this.materialGenerator.generatePlanetMaterial(planetData, {
+      starPosition,
+      starColor,
+      starIntensity,
+      planetRadius: radius,
+    });
+
+    const planetMesh = new THREE.Mesh(geometry, material);
+    planetMesh.userData = { ...planetData, radius };
+
+    if (addToScene) {
+      this.scene.add(planetMesh);
+    }
+
+    return planetMesh;
+  }
+
+  /**
+   * Create atmosphere mesh without storing in instance
+   * @param {Object} planetData - Planet data object
+   * @returns {THREE.Mesh|null} The created atmosphere mesh
+   */
+  createAtmosphere(planetData) {
+    const radius = Math.max(0.5, Math.min(3, planetData.radius * 0.5));
+    
+    // Only create atmosphere for certain planet types
+    if (
+      planetData.type === "terrestrial" ||
+      planetData.type === "super-earth" ||
+      planetData.type === "neptune" ||
+      planetData.type === "jupiter"
+    ) {
+      const starPosition = new THREE.Vector3(5, 3, 5);
+      const starColor = this.getStarColorVector(planetData);
+      const starIntensity = 2.0 + (planetData.stellarLuminosity || 0) * 0.3;
+
+      return this.atmosphereRenderer.addAtmosphere(
+        planetData,
+        radius,
+        { starPosition, starColor, starIntensity }
+      );
+    }
+
+    return null;
+  }
+
+  /**
+   * Create rings mesh without storing in instance
+   * @param {Object} planetData - Planet data object
+   * @returns {THREE.Mesh|null} The created rings mesh
+   */
+  createRings(planetData) {
+    const radius = Math.max(0.5, Math.min(3, planetData.radius * 0.5));
+
+    // Add rings for specific planets or gas giants
+    if (planetData.name === "Saturn") {
+      return this.ringRenderer.addSaturnRings(radius, null);
+    } else if (planetData.name === "Neptune") {
+      return this.ringRenderer.addNeptuneRings(radius, null);
+    } else if (planetData.type === "jupiter" || planetData.type === "neptune") {
+      // Use seeded random to ensure consistent ring presence
+      const seed = this.materialGenerator.hashCode(planetData.name + "_hasRings");
+      const random = this.materialGenerator.seededRandom(seed);
+
+      if (random < 0.3) {
+        return this.ringRenderer.addProceduralRings(planetData, radius, null);
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Render a planet with all its visual effects
    */
   renderPlanet(planetData, showOrbit = false) {

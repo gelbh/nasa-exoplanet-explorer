@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import "../styles/ExoplanetViewer.scss";
 import {
   useThreeJSScene,
   useExoplanetData,
@@ -590,10 +589,14 @@ const ExoplanetViewer = () => {
   };
 
   const handleViewComparisonIn3D = () => {
+    console.log("🚀 Starting 3D comparison view...");
+    
     if (!comparisonPlanets || comparisonPlanets.length === 0) {
       console.warn("No planets to compare");
       return;
     }
+
+    console.log("Planets to compare:", comparisonPlanets);
 
     // Hide other renderers
     if (galaxyRendererRef.current) {
@@ -610,6 +613,13 @@ const ExoplanetViewer = () => {
     comparisonRendererRef.current.setupComparison(comparisonPlanets);
     comparisonRendererRef.current.show();
 
+    // Update controls target
+    if (sceneManagerRef.current?.controls) {
+      sceneManagerRef.current.controls.target.set(0, 0, 0);
+      sceneManagerRef.current.controls.update();
+      console.log("✅ Controls updated for comparison view");
+    }
+
     // Update view mode
     viewModeRef.current = "comparison";
     setViewMode("comparison");
@@ -618,6 +628,8 @@ const ExoplanetViewer = () => {
     if (settingsManagerRef.current?.updateSettingsVisibility) {
       settingsManagerRef.current.updateSettingsVisibility("comparison");
     }
+    
+    console.log("✨ Comparison view setup complete!");
   };
 
   // ============================================
@@ -691,11 +703,11 @@ const ExoplanetViewer = () => {
           // New props for Tools tab
           bookmarkManager={bookmarkManagerRef.current}
           comparisonPlanets={comparisonPlanets}
-                  onAddToComparison={handleAddToComparison}
-                  onRemoveFromComparison={handleRemoveFromComparison}
-                  onClearComparison={handleClearComparison}
-                  onViewComparisonIn3D={handleViewComparisonIn3D}
-                  exportManager={exportManagerRef.current}
+          onAddToComparison={handleAddToComparison}
+          onRemoveFromComparison={handleRemoveFromComparison}
+          onClearComparison={handleClearComparison}
+          onViewComparisonIn3D={handleViewComparisonIn3D}
+          exportManager={exportManagerRef.current}
           viewState={{
             mode: viewMode,
             planet: currentPlanet?.name,
