@@ -101,6 +101,90 @@ const ComparisonTool = ({ selectedPlanets = [], onRemovePlanet, onClearAll }) =>
         </div>
       ) : (
         <div className="comparison-content">
+          {/* Visual Size Comparison */}
+          <div className="mb-4">
+            <label className="form-label text-white fw-semibold mb-3">
+              Visual Size Comparison
+            </label>
+            <div 
+              className="visual-comparison p-4 rounded" 
+              style={{ 
+                background: "rgba(0, 0, 0, 0.3)",
+                minHeight: "200px",
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "center",
+                gap: "20px",
+                flexWrap: "wrap",
+                position: "relative"
+              }}
+            >
+              {planetsToCompare.map((planet, index) => {
+                const maxRadius = Math.max(...planetsToCompare.map(p => p.radius));
+                const scale = Math.min(1, planet.radius / maxRadius);
+                const size = 40 + (scale * 120); // 40px to 160px
+                
+                return (
+                  <div 
+                    key={index}
+                    className="planet-visual text-center"
+                    style={{ 
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "10px"
+                    }}
+                  >
+                    <div
+                      className="planet-sphere"
+                      style={{
+                        width: `${size}px`,
+                        height: `${size}px`,
+                        borderRadius: "50%",
+                        background: `radial-gradient(circle at 30% 30%, ${getTypeColor(planet.type)}dd, ${getTypeColor(planet.type)}44)`,
+                        boxShadow: `0 4px 20px ${getTypeColor(planet.type)}66, inset -10px -10px 20px rgba(0,0,0,0.3)`,
+                        border: `2px solid ${getTypeColor(planet.type)}`,
+                        position: "relative",
+                        transition: "transform 0.3s ease",
+                        cursor: "pointer"
+                      }}
+                      title={`${planet.name}: ${formatNumber(planet.radius)} R⊕`}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                    >
+                      {/* Shine effect */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "15%",
+                          left: "20%",
+                          width: "30%",
+                          height: "30%",
+                          borderRadius: "50%",
+                          background: "radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)",
+                          pointerEvents: "none"
+                        }}
+                      />
+                    </div>
+                    <div className="planet-label">
+                      <div className="text-white fw-semibold" style={{ fontSize: "0.8rem" }}>
+                        {planet.name}
+                      </div>
+                      <div className="text-white-50" style={{ fontSize: "0.7rem" }}>
+                        {formatNumber(planet.radius)} R⊕
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="text-center mt-2">
+              <small className="text-white-50">
+                <i className="bx bx-info-circle"></i> Planet sizes scaled by radius (hover to see details)
+              </small>
+            </div>
+          </div>
+
           {/* Planet Cards */}
           <div className="row g-2 mb-4">
             {planetsToCompare.map((planet, index) => (
