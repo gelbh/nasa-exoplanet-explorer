@@ -590,7 +590,7 @@ const ExoplanetViewer = () => {
 
   const handleViewComparisonIn3D = () => {
     console.log("🚀 Starting 3D comparison view...");
-    
+
     if (!comparisonPlanets || comparisonPlanets.length === 0) {
       console.warn("No planets to compare");
       return;
@@ -628,7 +628,7 @@ const ExoplanetViewer = () => {
     if (settingsManagerRef.current?.updateSettingsVisibility) {
       settingsManagerRef.current.updateSettingsVisibility("comparison");
     }
-    
+
     console.log("✨ Comparison view setup complete!");
   };
 

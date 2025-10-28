@@ -109,7 +109,7 @@ export class PlanetRenderer {
    */
   createAtmosphere(planetData) {
     const radius = Math.max(0.5, Math.min(3, planetData.radius * 0.5));
-    
+
     // Only create atmosphere for certain planet types
     if (
       planetData.type === "terrestrial" ||
@@ -121,11 +121,11 @@ export class PlanetRenderer {
       const starColor = this.getStarColorVector(planetData);
       const starIntensity = 2.0 + (planetData.stellarLuminosity || 0) * 0.3;
 
-      return this.atmosphereRenderer.addAtmosphere(
-        planetData,
-        radius,
-        { starPosition, starColor, starIntensity }
-      );
+      return this.atmosphereRenderer.addAtmosphere(planetData, radius, {
+        starPosition,
+        starColor,
+        starIntensity,
+      });
     }
 
     return null;
@@ -146,7 +146,9 @@ export class PlanetRenderer {
       return this.ringRenderer.addNeptuneRings(radius, null);
     } else if (planetData.type === "jupiter" || planetData.type === "neptune") {
       // Use seeded random to ensure consistent ring presence
-      const seed = this.materialGenerator.hashCode(planetData.name + "_hasRings");
+      const seed = this.materialGenerator.hashCode(
+        planetData.name + "_hasRings"
+      );
       const random = this.materialGenerator.seededRandom(seed);
 
       if (random < 0.3) {

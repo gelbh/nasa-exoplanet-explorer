@@ -25,7 +25,7 @@ export class ComparisonRenderer {
    */
   setupComparison(planetsData) {
     console.log("🌍 Setting up comparison with planets:", planetsData);
-    
+
     // Clear existing comparison
     this.clearComparison();
 
@@ -45,20 +45,24 @@ export class ComparisonRenderer {
     const totalWidth = (planetsData.length - 1) * spacing;
     const startX = -totalWidth / 2;
 
-    console.log(`📐 Max radius: ${maxRadius}, Spacing: ${spacing}, Total width: ${totalWidth}`);
+    console.log(
+      `📐 Max radius: ${maxRadius}, Spacing: ${spacing}, Total width: ${totalWidth}`
+    );
 
     // Create each planet
     planetsData.forEach((planetData, index) => {
       const xPosition = startX + index * spacing;
-      
-      console.log(`Creating planet ${index}: ${planetData.name} at x=${xPosition}`);
-      
+
+      console.log(
+        `Creating planet ${index}: ${planetData.name} at x=${xPosition}`
+      );
+
       // Create planet mesh
       const planetMesh = this.planetRenderer.createPlanetMesh(
         planetData,
         false // Don't auto-add to scene
       );
-      
+
       if (planetMesh) {
         planetMesh.position.set(xPosition, 0, 0);
         planetMesh.userData = {
@@ -66,7 +70,7 @@ export class ComparisonRenderer {
           isComparisonPlanet: true,
           comparisonIndex: index,
         };
-        
+
         this.comparisonGroup.add(planetMesh);
         this.planets.push(planetMesh);
         console.log(`✅ Added planet mesh for ${planetData.name}`);
@@ -99,8 +103,10 @@ export class ComparisonRenderer {
     // Position group and camera for best view
     this.comparisonGroup.position.set(0, 0, 0);
     this.positionCameraForComparison(maxRadius, planetsData.length);
-    
-    console.log(`📹 Camera positioned. Group has ${this.comparisonGroup.children.length} children`);
+
+    console.log(
+      `📹 Camera positioned. Group has ${this.comparisonGroup.children.length} children`
+    );
     console.log(`🎭 Comparison group visible: ${this.comparisonGroup.visible}`);
   }
 
@@ -187,12 +193,14 @@ export class ComparisonRenderer {
     const spacing = Math.max(maxRadius * 3, 5);
     const totalWidth = (planetCount - 1) * spacing;
     const distance = Math.max(totalWidth * 0.8, maxRadius * 5, 15);
-    
-    console.log(`📷 Positioning camera: distance=${distance}, looking at (0, 0, 0)`);
-    
+
+    console.log(
+      `📷 Positioning camera: distance=${distance}, looking at (0, 0, 0)`
+    );
+
     this.camera.position.set(0, maxRadius * 1.5, distance);
     this.camera.lookAt(0, 0, 0);
-    
+
     // Update camera if there are controls
     if (this.camera.parent && this.camera.parent.controls) {
       this.camera.parent.controls.target.set(0, 0, 0);
@@ -228,12 +236,12 @@ export class ComparisonRenderer {
    */
   clearComparison() {
     console.log("🧹 Clearing comparison view");
-    
+
     // Remove all children from comparison group
     while (this.comparisonGroup.children.length > 0) {
       const child = this.comparisonGroup.children[0];
       this.comparisonGroup.remove(child);
-      
+
       // Dispose of geometries and materials
       if (child.geometry) {
         child.geometry.dispose();
