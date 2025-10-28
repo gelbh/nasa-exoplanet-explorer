@@ -165,6 +165,7 @@ const ExoplanetViewer = () => {
     }, 100); // Check every 100ms
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPlanet, currentSystem, viewMode]);
 
   // Update Info tab whenever planet/system/view changes
@@ -179,6 +180,7 @@ const ExoplanetViewer = () => {
         console.error("Error updating info tab:", error);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPlanet, currentSystem, viewMode]);
 
   // ============================================
@@ -540,6 +542,7 @@ const ExoplanetViewer = () => {
       cleanupUIManagers();
       removeCanvasEventListeners();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Listen for galactic center return button
@@ -555,6 +558,7 @@ const ExoplanetViewer = () => {
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ============================================
