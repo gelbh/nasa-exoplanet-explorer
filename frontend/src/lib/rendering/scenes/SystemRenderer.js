@@ -245,11 +245,11 @@ export class SystemRenderer {
 
     // Add rings for Saturn (always, bright and prominent)
     if (planet.name === "Saturn") {
-      const rings = ringRenderer.addSaturnRings(planetRadius, planetMesh);
+      ringRenderer.addSaturnRings(planetRadius, planetMesh);
     }
     // Add rings for Neptune (always, faint and dark)
     else if (planet.name === "Neptune") {
-      const rings = ringRenderer.addNeptuneRings(planetRadius, planetMesh);
+      ringRenderer.addNeptuneRings(planetRadius, planetMesh);
     }
     // Add rings for other gas giants (30% chance, seeded)
     else if (planet.type === "jupiter" || planet.type === "neptune") {
@@ -257,7 +257,7 @@ export class SystemRenderer {
       const seed = hashCode(planet.name + "_hasRings");
       const random = seededRandom(seed);
       if (random() > 0.7) {
-        const rings = ringRenderer.addPlanetRings(
+        ringRenderer.addPlanetRings(
           planet,
           planetRadius,
           planetMesh
@@ -601,7 +601,7 @@ export class SystemRenderer {
         starMaterial.needsUpdate = true;
       },
       undefined,
-      (error) => {
+      (_error) => {
         console.warn(
           "Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/"
         );
@@ -652,7 +652,7 @@ export class SystemRenderer {
     this.planetMeshes.forEach((planetMesh) => {
       if (!planetMesh.userData.animateOrbits) return;
 
-      const { orbitRadius, orbitalPeriod, planet } = planetMesh.userData;
+      const { orbitRadius, planet } = planetMesh.userData;
 
       // Calculate angular velocity
       // At speedMultiplier = 1.0: any planet completes 1 full orbit in 60 seconds

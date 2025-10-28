@@ -80,7 +80,6 @@ export class PlanetMaterialGenerator {
       starPosition = new THREE.Vector3(5, 3, 5),
       starColor = new THREE.Vector3(1.0, 1.0, 1.0),
       starIntensity = 2.0,
-      planetRadius = 1.0,
     } = options;
 
     // Get realistic physical properties
@@ -185,7 +184,6 @@ export class PlanetMaterialGenerator {
       thermalIntensity,
     } = options;
 
-    const tempDiff = RealisticPhysics.getDayNightTemperatureDiff(planet);
     const realisticColor = RealisticPhysics.getRealisticColor(planet);
 
     const material = new THREE.ShaderMaterial({
@@ -294,7 +292,7 @@ export class PlanetMaterialGenerator {
           material.needsUpdate = true;
         },
         undefined,
-        (error) => {
+        (_error) => {
           console.warn(
             `Failed to load texture for ${planet.name}, using procedural texture`
           );

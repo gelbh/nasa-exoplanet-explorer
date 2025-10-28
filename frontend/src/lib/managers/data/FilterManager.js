@@ -65,7 +65,6 @@ export class FilterManager {
 
     // Group planets by host star
     const systemsMap = new Map();
-    const standalonePlanets = [];
 
     planetsToSearch.forEach((planet) => {
       const starName = planet.hostStar;
@@ -314,7 +313,7 @@ export class FilterManager {
 
     const maxPlanets = Math.max(...planetCounts);
     const largestSystem = [...systems.entries()].find(
-      ([_, planets]) => planets.length === maxPlanets
+      ([_name, planets]) => planets.length === maxPlanets
     );
 
     return {

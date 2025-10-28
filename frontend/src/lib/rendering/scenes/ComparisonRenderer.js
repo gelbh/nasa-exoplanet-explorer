@@ -213,7 +213,7 @@ export class ComparisonRenderer {
   /**
    * Update comparison view (animate planets)
    */
-  update(deltaTime) {
+  update() {
     this.animationFrameCount++;
 
     // Rotate planets slowly

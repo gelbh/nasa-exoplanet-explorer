@@ -144,7 +144,7 @@ export class UIManager {
   /**
    * Render a system item (expandable with planets)
    */
-  renderSystemItem(list, systemData, index) {
+  renderSystemItem(list, systemData) {
     const systemItem = document.createElement("div");
     systemItem.className = "list-group-item";
 

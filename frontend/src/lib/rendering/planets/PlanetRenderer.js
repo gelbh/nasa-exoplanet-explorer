@@ -401,7 +401,7 @@ export class PlanetRenderer {
   /**
    * Add central star for orbit visualization
    */
-  addCentralStar(planet, planetRadius) {
+  addCentralStar(planet) {
     const starRadius = Math.max(0.3, Math.min(1.5, planet.stellarRadius * 0.4));
     const starGeometry = new THREE.SphereGeometry(starRadius, 32, 32);
     const starColor = getStarColor({

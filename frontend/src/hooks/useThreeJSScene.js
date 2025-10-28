@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import { SceneManager } from "../lib/rendering/scenes/SceneManager.js";
 import { PlanetRenderer } from "../lib/rendering/planets/PlanetRenderer.js";

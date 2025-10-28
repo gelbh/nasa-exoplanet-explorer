@@ -284,7 +284,7 @@ export const useViewTransitions = ({
     planetRendererRef.current.cleanup();
 
     const notableSystems = filterManagerRef.current.getNotableSystems();
-    const galaxyInfo = galaxyRendererRef.current.renderGalaxy(notableSystems);
+    galaxyRendererRef.current.renderGalaxy(notableSystems);
 
     if (previousSystem) {
       const systemPosition =

@@ -60,7 +60,7 @@ export class ExportManager {
     if (params.has("camera")) {
       try {
         state.camera = JSON.parse(params.get("camera"));
-      } catch (e) {
+      } catch (_e) {
         console.warn("Failed to parse camera state from URL");
       }
     }

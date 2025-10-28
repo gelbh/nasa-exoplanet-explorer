@@ -71,7 +71,6 @@ const ExoplanetViewer = () => {
   } = useThreeJSScene(domRefs.canvasRef, domRefs.canvasLoadingRef);
 
   const {
-    apiManagerRef,
     filterManagerRef,
     uiManagerRef,
     initializeDataManagers,
@@ -101,11 +100,7 @@ const ExoplanetViewer = () => {
     animateOrbitsRef,
     selectPlanet,
     selectSystem,
-    selectRandomPlanet,
-    selectRandomSystem,
     transitionToPlanetFromSystem,
-    switchToSystemView,
-    switchToPlanetView,
     switchToGalaxyView,
   } = useViewTransitions({
     sceneManagerRef,
@@ -128,7 +123,6 @@ const ExoplanetViewer = () => {
     initInfoTabPlanetClicks,
     switchToInfoTab,
     updateInfoTab,
-    clearInfoTab,
     zoomToGalacticCenter,
     returnToGalaxyView,
   } = useInfoTab({
@@ -503,7 +497,7 @@ const ExoplanetViewer = () => {
           galaxyRendererRef,
           sceneManagerRef,
           // On first batch
-          (allExoplanets) => {
+          () => {
             const systems = filterManagerRef.current.getNotableSystems();
             if (systems.length > 0 && galaxyRendererRef.current) {
               galaxyRendererRef.current.renderGalaxy(systems);
@@ -522,7 +516,7 @@ const ExoplanetViewer = () => {
             }
           },
           // On complete
-          (allExoplanets) => {
+          () => {
             updateInfoTab();
           }
         );
@@ -583,17 +577,17 @@ const ExoplanetViewer = () => {
   const handleClearComparison = () => {
     console.log("🧹 Clearing comparison...");
     setComparisonPlanets([]);
-    
+
     // Exit comparison view if active
     if (viewModeRef.current === "comparison") {
       console.log("Exiting comparison view...");
-      
+
       // Hide comparison renderer
       if (comparisonRendererRef.current) {
         comparisonRendererRef.current.hide();
         comparisonRendererRef.current.clearComparison();
       }
-      
+
       // Return to galaxy view
       switchToGalaxyView();
     }
@@ -601,10 +595,10 @@ const ExoplanetViewer = () => {
 
   const handleViewComparisonIn3D = (planetsToView) => {
     console.log("🚀 Starting 3D comparison view...");
-    
+
     // Use the planets passed from ComparisonTool (includes Earth if toggled)
     const planetsToCompare = planetsToView || comparisonPlanets;
-    
+
     if (!planetsToCompare || planetsToCompare.length === 0) {
       console.warn("No planets to compare");
       return;

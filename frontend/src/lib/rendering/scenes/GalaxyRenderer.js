@@ -65,9 +65,6 @@ export class GalaxyRenderer {
       this.renderStarSystem(system, index, systems.length);
     });
 
-    // Check if objects are visible and have proper positions
-    const sampleSystems = this.systemMeshes.slice(0, 5);
-
     // Make the galactic center (Sun) clickable by storing its system data
     if (this.galacticCenter) {
       const solarSystem = systems.find((sys) => sys.starName === "Sun");
@@ -141,7 +138,7 @@ export class GalaxyRenderer {
         diskMaterial.needsUpdate = true;
       },
       undefined,
-      (error) => {
+      (_error) => {
         console.warn("Failed to load Milky Way texture");
       }
     );
@@ -341,7 +338,7 @@ export class GalaxyRenderer {
           material.needsUpdate = true;
         },
         undefined,
-        (error) => {
+        (_error) => {
           console.warn(
             "Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/"
           );
@@ -383,8 +380,6 @@ export class GalaxyRenderer {
    * Convert equatorial coordinates (RA, Dec) to galactic coordinates (l, b)
    */
   equatorialToGalactic(ra, dec) {
-    const galacticCenterRA = 266.4;
-    const galacticCenterDec = -28.9;
     const northGalacticPoleRA = 192.85;
     const northGalacticPoleDec = 27.13;
     const galacticLongitudeOfNCP = 122.93;
@@ -416,7 +411,7 @@ export class GalaxyRenderer {
    * Converts RA/Dec to galactic coordinates with 123° rotation offset
    * Earth is at the origin (0, 0, 0)
    */
-  calculateSystemPosition(system, index, totalSystems) {
+  calculateSystemPosition(system) {
     const firstPlanet = system.planets[0];
     if (!firstPlanet) {
       console.warn("System has no planets:", system);

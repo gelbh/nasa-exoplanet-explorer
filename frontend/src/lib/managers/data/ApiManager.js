@@ -94,14 +94,12 @@ export class ApiManager {
 
     try {
       let data;
-      let fromCache = false;
 
       // Try to load from cache first
       if (this.isCacheValid()) {
         const cached = this.loadFromCache();
         if (cached) {
           data = cached;
-          fromCache = true;
         }
       }
 

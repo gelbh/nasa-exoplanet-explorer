@@ -649,7 +649,7 @@ export class StarRenderer {
    * Animate all stars (rotation, pulsation, flares)
    * Call this in animation loop
    */
-  animateStars(deltaTime = 0.016) {
+  animateStars() {
     this.stars.forEach((starGroup) => {
       // Skip simplified stars or stars without animation
       if (!starGroup.userData.animate || starGroup.userData.isSimplified)

@@ -464,11 +464,6 @@ export class SceneManager {
       const currentPlanetPosition = new THREE.Vector3();
       targetMesh.getWorldPosition(currentPlanetPosition);
 
-      // Calculate current ideal camera position relative to planet's current position
-      const currentIdealPosition = currentPlanetPosition
-        .clone()
-        .add(cameraOffset);
-
       // The final target position is the initial ideal position plus the delta from planet movement
       const planetDelta = currentPlanetPosition
         .clone()
