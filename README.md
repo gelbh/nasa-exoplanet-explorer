@@ -341,13 +341,3 @@ PORT=5000
 ## License
 
 MIT
-
-## Future Enhancements
-
-- System view with multiple planets orbiting their star
-- Orbital mechanics and animation
-- Comparative analysis between planets
-- AR/VR support
-- Historical discovery timeline
-- Habitable zone visualization
-- Mission data integration (TESS, Kepler, JWST)
