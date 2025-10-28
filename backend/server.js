@@ -71,10 +71,14 @@ app.get("/api/planet/:name", async (req, res) => {
   try {
     const planetName = req.params.name;
 
+    // Sanitize input to prevent SQL injection
+    // TAP queries require proper escaping of single quotes
+    const sanitizedName = planetName.replace(/'/g, "''");
+
     const query = `
       SELECT *
       FROM ps
-      WHERE pl_name = '${planetName}' AND default_flag = 1
+      WHERE pl_name = '${sanitizedName}' AND default_flag = 1
     `
       .replace(/\s+/g, " ")
       .trim();
