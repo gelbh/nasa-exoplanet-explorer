@@ -175,13 +175,17 @@ const ExoplanetViewer = () => {
 
   // Update Info tab whenever planet/system/view changes
   useEffect(() => {
-    if (updateInfoTab) {
-      updateInfoTab(viewMode, {
-        currentSystem: currentSystem,
-        currentPlanet: currentPlanet,
-      });
+    if (updateInfoTab && infoTabManagerRef.current) {
+      try {
+        updateInfoTab(viewMode, {
+          currentSystem: currentSystem,
+          currentPlanet: currentPlanet,
+        });
+      } catch (error) {
+        console.error("Error updating info tab:", error);
+      }
     }
-  }, [currentPlanet, currentSystem, viewMode, updateInfoTab]);
+  }, [currentPlanet, currentSystem, viewMode]);
 
   // ============================================
   // CUSTOM HOOKS - CANVAS INTERACTION
