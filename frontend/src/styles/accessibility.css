@@ -1,0 +1,154 @@
+/* ============================================
+   ACCESSIBILITY STYLES
+   ============================================ */
+
+/* Screen reader only content */
+.sr-only,
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+}
+
+/* Focus visible styles for keyboard navigation */
+.keyboard-navigation *:focus,
+*:focus-visible {
+  outline: 3px solid #667eea !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+/* Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #667eea;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 10000;
+  font-weight: 600;
+  transition: top 0.3s ease;
+}
+
+.skip-to-main:focus {
+  top: 0;
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Disable Three.js animations when reduced motion is preferred */
+  canvas {
+    animation: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --focus-outline-width: 4px;
+    --border-width: 2px;
+  }
+  
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    border-width: var(--border-width, 2px) !important;
+  }
+  
+  button:focus,
+  a:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline-width: var(--focus-outline-width, 4px) !important;
+  }
+}
+
+/* Focus indicators for interactive elements */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Improve contrast for disabled elements */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Aria-live regions for screen reader announcements */
+[aria-live] {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Better focus indicators for custom controls */
+.exoplanet-panel-content input[type="range"]:focus {
+  outline: 3px solid #667eea;
+  outline-offset: 4px;
+}
+
+.form-check-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+/* Ensure icons don't interfere with screen readers */
+i[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+/* Loading states for screen readers */
+[aria-busy="true"] {
+  cursor: wait;
+}
+
+/* Better link identification */
+a:not([class]) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:not([class]):hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-navigation button:focus,
+.keyboard-navigation a:focus,
+.keyboard-navigation input:focus,
+.keyboard-navigation select:focus {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.5);
+}
+
