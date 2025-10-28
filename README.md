@@ -37,27 +37,118 @@ An interactive 3D visualization tool for exploring confirmed exoplanets from NAS
 ```
 nasa-exoplanet-explorer/
 ├── backend/
-│   ├── server.js          # Express server with NASA API proxy
+│   ├── server.js                    # Express server with NASA API proxy
 │   ├── package.json
-│   └── .env.example
+│   └── package-lock.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # React components
-│   │   │   ├── ExoplanetViewer.jsx
-│   │   │   ├── SearchPanel.jsx
-│   │   │   └── InfoPanel.jsx
-│   │   ├── lib/           # Three.js managers and utilities
-│   │   │   ├── SceneManager.js
-│   │   │   ├── PlanetRenderer.js
-│   │   │   ├── GalaxyRenderer.js
-│   │   │   ├── ApiManager.js
-│   │   │   └── FilterManager.js
-│   │   ├── styles/        # CSS styling
-│   │   └── App.jsx
+│   │   ├── components/              # React components
+│   │   │   ├── ExoplanetViewer.jsx  # Main 3D viewer component
+│   │   │   ├── SearchPanel.jsx      # Search and filter UI
+│   │   │   ├── InfoPanel.jsx        # Planet information display
+│   │   │   ├── CombinedPanel.jsx    # Combined search/info panel
+│   │   │   ├── CanvasContainer.jsx  # Three.js canvas wrapper
+│   │   │   ├── CanvasControls.jsx   # Canvas control buttons
+│   │   │   ├── SettingsPanel.jsx    # Settings UI
+│   │   │   └── InstructionsOverlay.jsx # Help overlay
+│   │   ├── hooks/                   # Custom React hooks
+│   │   │   ├── useThreeJSScene.js   # Three.js scene management
+│   │   │   ├── useExoplanetData.js  # Data fetching and state
+│   │   │   ├── useDOMRefs.js        # DOM references
+│   │   │   ├── useUIManagers.js     # UI manager instances
+│   │   │   ├── useCanvasInteraction.js # Canvas interactions
+│   │   │   ├── useSettingsHandlers.js  # Settings logic
+│   │   │   ├── useViewTransitions.js   # View state transitions
+│   │   │   └── useInfoTab.js        # Info panel tab logic
+│   │   ├── lib/                     # Core libraries and utilities
+│   │   │   ├── managers/            # State and interaction managers
+│   │   │   │   ├── data/            # Data management
+│   │   │   │   │   ├── ApiManager.js
+│   │   │   │   │   ├── FilterManager.js
+│   │   │   │   │   └── SolarSystemData.js
+│   │   │   │   ├── interactions/    # User interactions
+│   │   │   │   │   ├── CameraManager.js
+│   │   │   │   │   └── SearchCoordinator.js
+│   │   │   │   ├── settings/        # Application settings
+│   │   │   │   │   └── SettingsManager.js
+│   │   │   │   └── ui/              # UI state management
+│   │   │   │       ├── UIManager.js
+│   │   │   │       ├── InfoTabManager.js
+│   │   │   │       ├── PanelManager.js
+│   │   │   │       └── TooltipManager.js
+│   │   │   ├── rendering/           # Three.js rendering modules
+│   │   │   │   ├── planets/         # Planet rendering
+│   │   │   │   │   ├── PlanetRenderer.js
+│   │   │   │   │   ├── PlanetMaterialGenerator.js
+│   │   │   │   │   ├── PlanetAtmosphereRenderer.js
+│   │   │   │   │   ├── PlanetRingRenderer.js
+│   │   │   │   │   └── TextureGenerator.js
+│   │   │   │   ├── stars/           # Star rendering
+│   │   │   │   │   └── StarRenderer.js
+│   │   │   │   ├── scenes/          # Scene management
+│   │   │   │   │   ├── SceneManager.js
+│   │   │   │   │   ├── GalaxyRenderer.js
+│   │   │   │   │   ├── SystemRenderer.js
+│   │   │   │   │   └── OrbitalMechanics.js
+│   │   │   │   └── shaders/         # GLSL shaders
+│   │   │   │       └── index.js
+│   │   │   ├── physics/             # Physics calculations
+│   │   │   │   └── index.js
+│   │   │   └── utils/               # Utility functions
+│   │   │       ├── constants.js
+│   │   │       └── helpers.js
+│   │   ├── styles/                  # CSS/SCSS styling
+│   │   │   ├── App.css
+│   │   │   └── ExoplanetViewer.scss
+│   │   ├── utils/                   # Frontend utilities
+│   │   │   └── constants.js
+│   │   ├── App.jsx                  # Main app component
+│   │   └── main.jsx                 # Entry point
+│   ├── public/                      # Static assets
+│   │   └── textures/                # Planet and galaxy textures
 │   ├── package.json
+│   ├── vite.config.js
 │   └── index.html
 └── README.md
 ```
+
+## Architecture
+
+The application follows a modular architecture with clear separation of concerns:
+
+### Frontend Architecture
+
+- **Components** - React components for UI rendering
+  - Modular, reusable components for different UI sections
+  - Custom hooks for state management and side effects
+  
+- **Hooks** - Custom React hooks for logic extraction
+  - Separates business logic from UI components
+  - Manages Three.js scene lifecycle, data fetching, and user interactions
+  
+- **Managers** - Class-based managers for complex state
+  - **Data Managers**: API calls, filtering, and data transformation
+  - **UI Managers**: Panel visibility, tooltips, and UI state
+  - **Interaction Managers**: Camera controls, search coordination
+  - **Settings Managers**: Application configuration and preferences
+  
+- **Rendering** - Three.js rendering pipeline
+  - **Planets**: Procedural planet generation with materials, atmospheres, and rings
+  - **Stars**: Star field and host star rendering
+  - **Scenes**: Galaxy view, system view, and scene transitions
+  - **Shaders**: Custom GLSL shaders for visual effects
+  
+- **Physics** - Realistic physics calculations
+  - Orbital mechanics and planetary motion
+  - Habitable zone calculations
+  - Temperature and atmospheric modeling
+
+### Backend Architecture
+
+- **Express Server** - RESTful API server
+  - Proxy for NASA Exoplanet Archive API
+  - CORS handling for cross-origin requests
+  - Error handling and request validation
 
 ## Setup Instructions
 
