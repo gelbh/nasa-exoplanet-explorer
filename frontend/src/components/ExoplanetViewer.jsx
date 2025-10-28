@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "../styles/ExoplanetViewer.scss";
 import {
   useThreeJSScene,
@@ -12,6 +12,8 @@ import {
 } from "../hooks";
 import CanvasContainer from "./CanvasContainer";
 import CombinedPanel from "./CombinedPanel";
+import { BookmarkManager } from "../lib/managers/storage/BookmarkManager";
+import { ExportManager } from "../lib/managers/export/ExportManager";
 
 // NASA Exoplanet Archive API endpoint
 // Import from constants (which uses environment variable)
@@ -31,6 +33,17 @@ import { EXOPLANET_API_ENDPOINT } from "../utils/constants";
  * - Realistic stellar lighting and atmospheric effects
  */
 const ExoplanetViewer = () => {
+  // ============================================
+  // STATE FOR NEW FEATURES
+  // ============================================
+
+  // Comparison tool state
+  const [comparisonPlanets, setComparisonPlanets] = useState([]);
+
+  // Managers for new features
+  const bookmarkManagerRef = useRef(null);
+  const exportManagerRef = useRef(null);
+
   // ============================================
   // CUSTOM HOOKS - DOM & SCENE
   // ============================================
@@ -399,6 +412,9 @@ const ExoplanetViewer = () => {
   // ============================================
 
   useEffect(() => {
+    // Initialize new feature managers
+    bookmarkManagerRef.current = new BookmarkManager();
+    
     // Initialize all managers
     initializeDataManagers();
     initializeUIManagers(domRefs.canvasRef, domRefs.infoContentRef);
@@ -415,6 +431,9 @@ const ExoplanetViewer = () => {
     requestAnimationFrame(() => {
       setTimeout(() => {
         initThreeJS();
+
+        // Initialize export manager after scene is ready
+        exportManagerRef.current = new ExportManager(sceneManagerRef.current);
 
         // Set camera manager callbacks
         cameraManagerRef.current.setCallbacks({
@@ -506,6 +525,25 @@ const ExoplanetViewer = () => {
   }, []);
 
   // ============================================
+  // HANDLERS FOR NEW FEATURES
+  // ============================================
+
+  const handleAddToComparison = (planet) => {
+    // Check if planet is already in comparison
+    if (!comparisonPlanets.find((p) => p.name === planet.name)) {
+      setComparisonPlanets([...comparisonPlanets, planet]);
+    }
+  };
+
+  const handleRemoveFromComparison = (planet) => {
+    setComparisonPlanets(comparisonPlanets.filter((p) => p.name !== planet.name));
+  };
+
+  const handleClearComparison = () => {
+    setComparisonPlanets([]);
+  };
+
+  // ============================================
   // RENDER
   // ============================================
 
@@ -521,7 +559,7 @@ const ExoplanetViewer = () => {
           onToggleFullscreen={toggleFullscreen}
         />
 
-        {/* Combined Panel with Settings, Search, and Info tabs */}
+        {/* Combined Panel with Settings, Search, Info, and Tools tabs */}
         <CombinedPanel
           leftPanelRef={domRefs.leftPanelRef}
           settingsRefs={{
@@ -573,6 +611,21 @@ const ExoplanetViewer = () => {
           }}
           infoContentRef={domRefs.infoContentRef}
           onTogglePanelMinimize={togglePanelMinimize}
+          // New props for Tools tab
+          bookmarkManager={bookmarkManagerRef.current}
+          comparisonPlanets={comparisonPlanets}
+          onAddToComparison={handleAddToComparison}
+          onRemoveFromComparison={handleRemoveFromComparison}
+          onClearComparison={handleClearComparison}
+          exportManager={exportManagerRef.current}
+          viewState={{
+            mode: viewModeRef.current,
+            planet: currentPlanetRef.current?.name,
+            system: currentSystemRef.current?.hostStar,
+          }}
+          currentPlanet={currentPlanetRef.current}
+          onPlanetSelect={selectPlanet}
+          onSystemSelect={selectSystem}
         />
       </section>
     </div>
