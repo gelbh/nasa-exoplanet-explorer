@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { getStarColor, hashCode, seededRandom } from "./utils";
+import { getStarColor, hashCode, seededRandom } from "../../utils/helpers.js";
 
 /**
  * StarRenderer

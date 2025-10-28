@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 /**
  * Shared utility functions for the exoplanet viewer
  */

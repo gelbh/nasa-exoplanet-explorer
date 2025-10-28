@@ -1,5 +1,5 @@
-import { escapeHtml } from "./utils";
-import { getPlanetTypeName, getTypeColor } from "./planetConstants";
+import { escapeHtml } from "../../utils/helpers.js";
+import { getPlanetTypeName, getTypeColor } from "../../utils/constants.js";
 
 /**
  * UIManager
@@ -61,7 +61,7 @@ export class UIManager {
     itemsToRender.forEach((planet) => {
       const item = document.createElement("button");
       item.className = "list-group-item list-group-item-action";
-      // Security: Sanitize data before inserting to prevent XSS
+      // Sanitize data before inserting to prevent XSS
       item.innerHTML = `
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -152,7 +152,7 @@ export class UIManager {
     const systemHeader = document.createElement("button");
     systemHeader.className =
       "btn btn-link w-100 text-start p-0 text-decoration-none";
-    // Security: Sanitize data before inserting to prevent XSS
+    // Sanitize data before inserting to prevent XSS
     systemHeader.innerHTML = `
       <div class="d-flex justify-content-between align-items-center py-2">
         <div>
@@ -179,7 +179,7 @@ export class UIManager {
     systemData.planets.forEach((planet) => {
       const planetItem = document.createElement("button");
       planetItem.className = "list-group-item list-group-item-action border-0";
-      // Security: Sanitize data before inserting to prevent XSS
+      // Sanitize data before inserting to prevent XSS
       planetItem.innerHTML = `
         <div class="d-flex justify-content-between align-items-start">
           <div>
@@ -238,7 +238,7 @@ export class UIManager {
   renderPlanetItem(list, planet, systemData = null) {
     const item = document.createElement("button");
     item.className = "list-group-item list-group-item-action";
-    // Security: Sanitize data before inserting to prevent XSS
+    // Sanitize data before inserting to prevent XSS
     item.innerHTML = `
       <div class="d-flex justify-content-between align-items-start">
         <div>
@@ -247,9 +247,9 @@ export class UIManager {
             planet.hostStar
           )}</div>
         </div>
-        <span class="badge bg-${getTypeColor(
-          planet.type
-        )}">${this.sanitizeHTML(getPlanetTypeName(planet.type))}</span>
+        <span class="badge bg-${getTypeColor(planet.type)}">${this.sanitizeHTML(
+      getPlanetTypeName(planet.type)
+    )}</span>
       </div>
     `;
     item.addEventListener("click", () => {
@@ -328,7 +328,7 @@ export class UIManager {
     systems.forEach((system) => {
       const item = document.createElement("button");
       item.className = "list-group-item list-group-item-action";
-      // Security: Sanitize data before inserting to prevent XSS
+      // Sanitize data before inserting to prevent XSS
       item.innerHTML = `
         <div class="d-flex justify-content-between align-items-start">
           <div class="flex-grow-1">
@@ -621,9 +621,7 @@ export class UIManager {
         <div class="info-section">
           <h6 class="text-white mb-2">Classification</h6>
           <div class="mb-3">
-            <span class="badge bg-${getTypeColor(
-              planet.type
-            )} fs-sm px-3 py-2">
+            <span class="badge bg-${getTypeColor(planet.type)} fs-sm px-3 py-2">
               ${this.sanitizeHTML(getPlanetTypeName(planet.type))}
             </span>
           </div>

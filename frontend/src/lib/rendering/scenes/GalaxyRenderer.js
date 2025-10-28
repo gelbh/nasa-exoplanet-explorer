@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { getStarColor } from './utils';
-import { StarRenderer } from './StarRenderer';
+import * as THREE from "three";
+import { getStarColor } from "../../utils/helpers.js";
+import { StarRenderer } from "../stars/StarRenderer.js";
 
 /**
  * GalaxyRenderer
@@ -28,6 +28,7 @@ export class GalaxyRenderer {
     this.diskRotationZ = 0; // Current Z rotation of the disk
     this.starRenderer = new StarRenderer(scene); // Realistic star rendering
     this.useRealisticStars = false; // Toggle for realistic star rendering (disabled by default for performance)
+    this.basicStructureRendered = false; // Track if Milky Way structure has been rendered
   }
 
   /**
@@ -35,39 +36,41 @@ export class GalaxyRenderer {
    * @param {Array} systems - Array of star system data
    */
   renderGalaxy(systems) {
-    console.log('🌌 GalaxyRenderer.renderGalaxy called with', systems.length, 'systems');
-    // Clean up any existing galaxy
-    this.cleanup();
+    // Only clean up star systems, not the basic structure
+    this.cleanupStarSystems();
 
     if (!systems || systems.length === 0) {
-      console.warn('⚠️ No systems to render');
+      console.warn("⚠️ No systems to render");
       return;
     }
 
     this.starSystems = systems;
 
-    // Add realistic Milky Way structure
-    console.log('🌠 Adding Milky Way structure...');
-    this.addMilkyWayStructure();
+    // Only add basic structure if it hasn't been rendered yet
+    if (!this.basicStructureRendered) {
+      // Add realistic Milky Way structure
+      this.addMilkyWayStructure();
 
-    // Add galactic center (visual reference point for our Sun/Solar System)
-    console.log('☀️ Adding galactic center...');
-    this.addGalacticCenter();
+      // Add galactic center (visual reference point for our Sun/Solar System)
+      this.addGalacticCenter();
 
-    // Add marker for actual galactic center (Sagittarius A*)
-    console.log('⚫ Adding Sagittarius A* marker...');
-    this.addGalacticCenterMarker();
+      // Add marker for actual galactic center (Sagittarius A*)
+      this.addGalacticCenterMarker();
+
+      this.basicStructureRendered = true;
+    }
 
     // Render each star system
-    console.log('🌟 Rendering', systems.length, 'star systems...');
     systems.forEach((system, index) => {
       this.renderStarSystem(system, index, systems.length);
     });
-    console.log('✅ Galaxy rendering complete. Scene children:', this.scene.children.length);
+
+    // Check if objects are visible and have proper positions
+    const sampleSystems = this.systemMeshes.slice(0, 5);
 
     // Make the galactic center (Sun) clickable by storing its system data
     if (this.galacticCenter) {
-      const solarSystem = systems.find((sys) => sys.starName === 'Sun');
+      const solarSystem = systems.find((sys) => sys.starName === "Sun");
       if (solarSystem) {
         this.galacticCenter.userData.isStarSystem = true;
         this.galacticCenter.userData.systemData = solarSystem;
@@ -85,6 +88,11 @@ export class GalaxyRenderer {
    * Add complete Milky Way galaxy structure
    */
   addMilkyWayStructure() {
+    // Don't add if already exists
+    if (this.milkyWayStructure) {
+      return;
+    }
+
     this.milkyWayStructure = new THREE.Group();
 
     // Add textured disk with realistic Milky Way image
@@ -127,14 +135,14 @@ export class GalaxyRenderer {
 
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(
-      '/textures/galaxy/milky_way.png',
+      "/textures/galaxy/milky_way.png",
       (texture) => {
         diskMaterial.map = texture;
         diskMaterial.needsUpdate = true;
       },
       undefined,
       (error) => {
-        console.warn('Failed to load Milky Way texture');
+        console.warn("Failed to load Milky Way texture");
       }
     );
 
@@ -146,6 +154,10 @@ export class GalaxyRenderer {
    * Creates a supermassive black hole visualization with accretion disk
    */
   addGalacticCenterMarker() {
+    // Don't add if already exists
+    if (this.galacticCenterMarker) {
+      return;
+    }
     const earthDistanceFromGC = 27000;
     const scaledDistance = Math.log10(earthDistanceFromGC + 1) * 15;
 
@@ -154,12 +166,12 @@ export class GalaxyRenderer {
 
     // Make it clickable
     this.galacticCenterMarker.userData.isGalacticCenter = true;
-    this.galacticCenterMarker.userData.name = 'Sagittarius A*';
+    this.galacticCenterMarker.userData.name = "Sagittarius A*";
     this.galacticCenterMarker.userData.description =
-      'Supermassive Black Hole at the center of the Milky Way';
-    this.galacticCenterMarker.userData.mass = '4.15 million solar masses';
+      "Supermassive Black Hole at the center of the Milky Way";
+    this.galacticCenterMarker.userData.mass = "4.15 million solar masses";
     this.galacticCenterMarker.userData.distance =
-      '27,000 light-years from Earth';
+      "27,000 light-years from Earth";
 
     // Central black sphere (event horizon)
     const blackHoleGeometry = new THREE.SphereGeometry(2, 32, 32);
@@ -281,10 +293,14 @@ export class GalaxyRenderer {
    * Add a visual representation of the Sun (Solar System at galactic center)
    */
   addGalacticCenter() {
+    // Don't add if already exists
+    if (this.galacticCenter) {
+      return;
+    }
     if (this.useRealisticStars) {
       // Use simplified star renderer for the Sun for better performance
       const solarData = {
-        spectralType: 'G2V',
+        spectralType: "G2V",
         stellarTemp: 5778,
         stellarRadius: 1.0,
         stellarLuminosity: 1.0,
@@ -302,13 +318,16 @@ export class GalaxyRenderer {
       );
 
       // Scale for galaxy view
-      this.galacticCenter.scale.setScalar(1.5);
+      this.galacticCenter.scale.setScalar(3.0);
       this.scene.add(this.galacticCenter);
     } else {
       // Legacy rendering
       const geometry = new THREE.SphereGeometry(1.5, 64, 64);
       const material = new THREE.MeshBasicMaterial({
         color: 0xfdb813,
+        side: THREE.FrontSide,
+        depthTest: true,
+        depthWrite: true,
       });
 
       this.galacticCenter = new THREE.Mesh(geometry, material);
@@ -316,7 +335,7 @@ export class GalaxyRenderer {
 
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load(
-        '/textures/planets/sun.jpg',
+        "/textures/planets/sun.jpg",
         (texture) => {
           material.map = texture;
           material.needsUpdate = true;
@@ -324,7 +343,7 @@ export class GalaxyRenderer {
         undefined,
         (error) => {
           console.warn(
-            'Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/'
+            "Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/"
           );
         }
       );
@@ -338,7 +357,7 @@ export class GalaxyRenderer {
    */
   renderStarSystem(system, index, totalSystems) {
     // Skip the Solar System - it's rendered as the galactic center
-    if (system.starName === 'Sun') {
+    if (system.starName === "Sun") {
       return;
     }
 
@@ -400,7 +419,7 @@ export class GalaxyRenderer {
   calculateSystemPosition(system, index, totalSystems) {
     const firstPlanet = system.planets[0];
     if (!firstPlanet) {
-      console.warn('System has no planets:', system);
+      console.warn("System has no planets:", system);
       return new THREE.Vector3(0, 0, 0);
     }
 
@@ -412,7 +431,7 @@ export class GalaxyRenderer {
     const earthScaledDist = Math.log10(earthDistanceFromGC + 1) * 15;
 
     if (ra === null || dec === null || ra === undefined || dec === undefined) {
-      console.warn('Missing RA/Dec for system:', system.name);
+      console.warn("Missing RA/Dec for system:", system.name);
       const theta = Math.random() * Math.PI * 2;
       const height = (Math.random() - 0.5) * 4;
       const radius = Math.random() * 10 + earthScaledDist - 5;
@@ -459,7 +478,7 @@ export class GalaxyRenderer {
       // Use simplified star renderer for performance in galaxy view
       const firstPlanet = system.planets[0];
       const stellarData = {
-        spectralType: firstPlanet?.spectralType || 'G',
+        spectralType: firstPlanet?.spectralType || "G",
         stellarTemp: firstPlanet?.stellarTemp || 5778,
         stellarRadius: firstPlanet?.stellarRadius || 1.0,
         stellarLuminosity: firstPlanet?.stellarLuminosity || 1.0,
@@ -573,7 +592,7 @@ export class GalaxyRenderer {
     if (!system) return null;
 
     // Solar System is always at the center (origin)
-    if (system.starName === 'Sun') {
+    if (system.starName === "Sun") {
       return new THREE.Vector3(0, 0, 0);
     }
 
@@ -711,6 +730,26 @@ export class GalaxyRenderer {
   }
 
   /**
+   * Cleanup only star systems (keep basic structure)
+   */
+  cleanupStarSystems() {
+    // Remove system meshes only
+    this.systemMeshes.forEach((mesh) => {
+      this.scene.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((m) => m.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+      }
+    });
+    this.systemMeshes = [];
+    this.starSystems = [];
+  }
+
+  /**
    * Cleanup all galaxy objects
    */
   cleanup() {
@@ -783,5 +822,6 @@ export class GalaxyRenderer {
     this.spiralArms = [];
     this.milkyWayDisk = null;
     this.starSystems = [];
+    this.basicStructureRendered = false;
   }
 }

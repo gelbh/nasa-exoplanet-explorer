@@ -1,5 +1,5 @@
-import { escapeHtml, formatDistance } from "./utils";
-import { getPlanetTypeName, getTypeColor } from "./planetConstants";
+import { escapeHtml, formatDistance } from "../../utils/helpers.js";
+import { getPlanetTypeName, getTypeColor } from "../../utils/constants.js";
 
 /**
  * InfoTabManager
@@ -186,9 +186,7 @@ export class InfoTabManager {
     this.infoContentTarget.innerHTML = `
       <div class="info-system">
         <h5 class="text-white mb-3 d-flex align-items-center">
-          <i class="bx bx-sun me-2 text-warning"></i> ${escapeHtml(
-            starName
-          )}
+          <i class="bx bx-sun me-2 text-warning"></i> ${escapeHtml(starName)}
         </h5>
 
         <div class="info-section mb-4">
@@ -245,12 +243,8 @@ export class InfoTabManager {
                 ([type, count]) => `
               <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded"
                    style="background: rgba(255, 255, 255, 0.03);">
-                <span class="text-white-50">${getPlanetTypeName(
-                  type
-                )}</span>
-                <span class="badge bg-${getTypeColor(
-                  type
-                )}">${count}</span>
+                <span class="text-white-50">${getPlanetTypeName(type)}</span>
+                <span class="badge bg-${getTypeColor(type)}">${count}</span>
               </div>
             `
               )
@@ -363,9 +357,7 @@ export class InfoTabManager {
     this.infoContentTarget.innerHTML = `
       <div class="info-planet">
         <h5 class="text-white mb-3 d-flex align-items-center">
-          <i class="bx bx-planet me-2 text-primary"></i> ${escapeHtml(
-            name
-          )}
+          <i class="bx bx-planet me-2 text-primary"></i> ${escapeHtml(name)}
         </h5>
 
         <div class="info-section mb-4">
@@ -373,9 +365,7 @@ export class InfoTabManager {
           <div class="property-grid">
             <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
               <div class="text-white-50 fs-sm">Host Star</div>
-              <div class="text-white fw-semibold">${escapeHtml(
-                hostStar
-              )}</div>
+              <div class="text-white fw-semibold">${escapeHtml(hostStar)}</div>
             </div>
             <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
               <div class="text-white-50 fs-sm">Type</div>

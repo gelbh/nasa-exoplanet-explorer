@@ -1,6 +1,7 @@
 import * as THREE from "three";
-import { getStarColor, hashCode, seededRandom } from "./utils";
-import { StarRenderer } from "./StarRenderer";
+import { getStarColor, hashCode, seededRandom } from "../../utils/helpers.js";
+import { StarRenderer } from "../stars/StarRenderer.js";
+import { OrbitalMechanics } from "./OrbitalMechanics.js";
 
 /**
  * SystemRenderer
@@ -27,6 +28,9 @@ export class SystemRenderer {
 
     // Initialize star renderer for realistic stars
     this.starRenderer = new StarRenderer(scene);
+
+    // Initialize orbital mechanics calculator
+    this.orbitalMechanics = new OrbitalMechanics();
   }
 
   /**
@@ -135,114 +139,32 @@ export class SystemRenderer {
    * Calculate orbit radius with proper scaling
    */
   calculateOrbitRadius(planet, index, scaleFactor) {
-    let orbitRadius;
-
-    // Use semi-major axis if available (most accurate)
-    if (planet.semiMajorAxis && planet.semiMajorAxis > 0) {
-      orbitRadius = planet.semiMajorAxis * scaleFactor;
-    }
-    // Fallback to orbital period (Kepler's third law approximation)
-    else if (planet.orbitalPeriod && planet.orbitalPeriod > 0) {
-      // R^3 ∝ T^2 (simplified, assuming solar-mass star)
-      const au = Math.pow(planet.orbitalPeriod / 365.25, 2 / 3);
-      orbitRadius = au * scaleFactor;
-    }
-    // Last resort: equal spacing
-    else {
-      orbitRadius = (index + 1) * 3;
-    }
-
-    // In realistic distance mode, don't enforce minimum spacing
-    // This preserves the actual relative distances between planets
-    if (this.useRealisticDistances) {
-      // For multi-star systems, still ensure planets orbit outside the star system
-      if (this.multiStarMinOrbitRadius) {
-        return Math.max(orbitRadius, this.multiStarMinOrbitRadius);
-      }
-      return orbitRadius;
-    }
-
-    // Compressed mode: ensure minimum spacing between planets for visibility
-    let minRadius = 2 + index * 2;
-
-    // For multi-star systems, ensure all planets orbit outside the star system extent
-    if (this.multiStarMinOrbitRadius) {
-      minRadius = Math.max(minRadius, this.multiStarMinOrbitRadius);
-    }
-
-    return Math.max(orbitRadius, minRadius);
+    return this.orbitalMechanics.calculateOrbitRadius(
+      planet,
+      index,
+      scaleFactor
+    );
   }
 
   /**
    * Calculate maximum orbit radius in the system
    */
   calculateMaxOrbitRadius(planets) {
-    let maxRadius = 0;
-
-    planets.forEach((planet) => {
-      if (planet.semiMajorAxis && planet.semiMajorAxis > maxRadius) {
-        maxRadius = planet.semiMajorAxis;
-      }
-    });
-
-    // If no semi-major axis data, use orbital period
-    if (maxRadius === 0) {
-      planets.forEach((planet) => {
-        if (planet.orbitalPeriod) {
-          const au = Math.pow(planet.orbitalPeriod / 365.25, 2 / 3);
-          if (au > maxRadius) maxRadius = au;
-        }
-      });
-    }
-
-    return maxRadius || 10; // Default if no data
+    return this.orbitalMechanics.calculateMaxOrbitRadius(planets);
   }
 
   /**
    * Calculate scale factor to fit system in view
    */
   calculateScaleFactor(maxOrbitRadius) {
-    if (this.useRealisticDistances) {
-      // Realistic mode: use logarithmic scaling for better visualization
-      // 1 AU = 3 units (allows viewing of wide-range systems)
-      // This shows true relative distances while keeping everything visible
-      return 3.0;
-    } else {
-      // Compressed mode: fit everything into viewable area
-      // We want the outermost planet at roughly 15-20 units from center
-      const targetMaxRadius = 18;
-
-      if (maxOrbitRadius < 1) {
-        // Very compact system (hot Jupiters, etc.)
-        return 30;
-      } else if (maxOrbitRadius < 5) {
-        // Compact system
-        return targetMaxRadius / maxOrbitRadius;
-      } else if (maxOrbitRadius < 50) {
-        // Normal system
-        return targetMaxRadius / maxOrbitRadius;
-      } else {
-        // Very large system
-        return targetMaxRadius / maxOrbitRadius;
-      }
-    }
+    return this.orbitalMechanics.calculateScaleFactor(maxOrbitRadius);
   }
 
   /**
    * Calculate planet visual size (scaled for system view)
    */
   calculatePlanetSize(planet) {
-    // Scale down planets for system view, but keep them visible
-    const baseRadius = Math.max(0.2, Math.min(1.5, planet.radius * 0.3));
-
-    // Ensure gas giants are visibly larger than terrestrials
-    if (planet.type === "jupiter") {
-      return baseRadius * 1.5;
-    } else if (planet.type === "neptune") {
-      return baseRadius * 1.2;
-    }
-
-    return baseRadius;
+    return this.orbitalMechanics.calculatePlanetSize(planet);
   }
 
   /**
@@ -505,6 +427,9 @@ export class SystemRenderer {
     // Add extra margin for safety and visual clarity (1.5x buffer)
     this.multiStarMinOrbitRadius =
       (separation + starRadius * maxStarExtent) * 1.5;
+    this.orbitalMechanics.setMultiStarMinOrbitRadius(
+      this.multiStarMinOrbitRadius
+    );
 
     starPositions.forEach((position, index) => {
       const starGeometry = new THREE.SphereGeometry(starRadius, 32, 32);
@@ -544,32 +469,10 @@ export class SystemRenderer {
    * Calculate positions for multiple stars in a system
    */
   calculateStarPositions(numberOfStars, starRadius) {
-    const positions = [];
-    const separation = starRadius * 4; // Distance between stars
-
-    if (numberOfStars === 2) {
-      // Binary system: position stars on either side
-      positions.push(new THREE.Vector3(-separation / 2, 0, 0));
-      positions.push(new THREE.Vector3(separation / 2, 0, 0));
-    } else if (numberOfStars === 3) {
-      // Triple system: equilateral triangle
-      const angle = (Math.PI * 2) / 3;
-      for (let i = 0; i < 3; i++) {
-        const x = Math.cos(angle * i) * separation;
-        const z = Math.sin(angle * i) * separation;
-        positions.push(new THREE.Vector3(x, 0, z));
-      }
-    } else {
-      // 4+ stars: circular arrangement
-      const angle = (Math.PI * 2) / numberOfStars;
-      for (let i = 0; i < numberOfStars; i++) {
-        const x = Math.cos(angle * i) * separation;
-        const z = Math.sin(angle * i) * separation;
-        positions.push(new THREE.Vector3(x, 0, z));
-      }
-    }
-
-    return positions;
+    return this.orbitalMechanics.calculateStarPositions(
+      numberOfStars,
+      starRadius
+    );
   }
 
   /**
@@ -588,20 +491,7 @@ export class SystemRenderer {
    * Calculate star radius based on stellar data and distance mode
    */
   calculateStarRadius(stellarData) {
-    const stellarRadius = stellarData.stellarRadius || 1.0; // In solar radii
-
-    if (this.useRealisticDistances) {
-      // Realistic mode: 1 solar radius = 0.00465 AU
-      // Scale it up by 100x to keep it visible (otherwise it's a tiny dot)
-      // This keeps relative sizes accurate while maintaining visibility
-      const solarRadiusInAU = 0.00465;
-      const scaleFactor = 3.0; // Same as orbit scaling (1 AU = 3 units)
-      const visibilityBoost = 100; // Make it visible but keep proportions
-      return stellarRadius * solarRadiusInAU * scaleFactor * visibilityBoost;
-    } else {
-      // Compressed mode: Use clamped visual size
-      return Math.max(0.5, Math.min(2, stellarRadius * 0.5));
-    }
+    return this.orbitalMechanics.calculateStarRadius(stellarData);
   }
 
   /**
@@ -618,6 +508,7 @@ export class SystemRenderer {
 
     // Reset multi-star minimum orbit radius for single-star systems
     this.multiStarMinOrbitRadius = null;
+    this.orbitalMechanics.setMultiStarMinOrbitRadius(null);
 
     // Calculate realistic star radius
     const starRadius = this.calculateStarRadius(stellarData);
@@ -965,6 +856,7 @@ export class SystemRenderer {
    */
   setRealisticDistances(realistic) {
     this.useRealisticDistances = realistic;
+    this.orbitalMechanics.setRealisticDistances(realistic);
   }
 
   /**

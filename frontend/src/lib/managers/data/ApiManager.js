@@ -1,6 +1,6 @@
 /**
  * ApiManager
- * Handles fetching and processing exoplanet data from NASA API
+ * Handles fetching and processing exoplanet data from NASA API with caching
  */
 export class ApiManager {
   constructor(apiEndpoint) {
@@ -8,6 +8,55 @@ export class ApiManager {
     this.exoplanets = [];
     this.isProcessing = false;
     this.pendingCallbacks = []; // Track pending idle/animation frame callbacks
+    this.cacheKey = "nasa_exoplanets_cache";
+    this.cacheTimestampKey = "nasa_exoplanets_cache_timestamp";
+    this.cacheExpiration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  }
+
+  /**
+   * Check if cached data exists and is still valid
+   */
+  isCacheValid() {
+    try {
+      const timestamp = localStorage.getItem(this.cacheTimestampKey);
+      if (!timestamp) return false;
+
+      const age = Date.now() - parseInt(timestamp, 10);
+      return age < this.cacheExpiration;
+    } catch (error) {
+      console.warn("Error checking cache validity:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Load data from cache
+   */
+  loadFromCache() {
+    try {
+      const cached = localStorage.getItem(this.cacheKey);
+      if (!cached) return null;
+
+      return JSON.parse(cached);
+    } catch (error) {
+      console.warn("Error loading from cache:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Save data to cache
+   */
+  saveToCache(data) {
+    try {
+      localStorage.setItem(this.cacheKey, JSON.stringify(data));
+      localStorage.setItem(this.cacheTimestampKey, Date.now().toString());
+    } catch (error) {
+      console.warn(
+        "Error saving to cache (localStorage might be full):",
+        error
+      );
+    }
   }
 
   /**
@@ -33,7 +82,7 @@ export class ApiManager {
   }
 
   /**
-   * Fetch exoplanets from NASA API (via backend proxy)
+   * Fetch exoplanets from NASA API (via backend proxy) or load from cache
    * Processes data in batches for smoother UI experience
    */
   async fetchExoplanets(onBatchProcessed, onComplete, onError) {
@@ -44,13 +93,31 @@ export class ApiManager {
     this.isProcessing = true;
 
     try {
-      const response = await fetch(this.apiEndpoint);
+      let data;
+      let fromCache = false;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Try to load from cache first
+      if (this.isCacheValid()) {
+        const cached = this.loadFromCache();
+        if (cached) {
+          data = cached;
+          fromCache = true;
+        }
       }
 
-      const data = await response.json();
+      // Fetch from API if no valid cache
+      if (!data) {
+        const response = await fetch(this.apiEndpoint);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        data = await response.json();
+
+        // Save to cache for next time
+        this.saveToCache(data);
+      }
 
       // Initialize arrays
       this.exoplanets = [];
@@ -145,7 +212,7 @@ export class ApiManager {
     const ra = raw.ra || null; // Right Ascension (degrees)
     const dec = raw.dec || null; // Declination (degrees)
 
-    // NEW: Orbital mechanics (validated)
+    // Orbital mechanics (validated)
     const orbitalInclination = raw.pl_orbincl
       ? Math.max(0, Math.min(raw.pl_orbincl, 180)) // 0-180 degrees
       : null;
@@ -153,19 +220,19 @@ export class ApiManager {
       ? Math.max(0, Math.min(raw.pl_orblper, 360)) // 0-360 degrees
       : null;
 
-    // NEW: Discovery context
+    // Discovery context
     const discoveryMethod = raw.discoverymethod || null; // e.g., "Transit", "Radial Velocity"
     const discoveryFacility = raw.disc_facility || null; // e.g., "Kepler", "TESS"
 
-    // NEW: System context
+    // System context
     const numberOfStars = raw.sy_snum || 1; // Number of stars in system
     const numberOfPlanets = raw.sy_pnum || 1; // Number of planets in system
 
-    // NEW: Stellar properties
+    // Stellar properties
     const spectralType = raw.st_spectype || null; // e.g., "G2V", "M3V"
     const stellarAge = raw.st_age || null; // Gyr (billion years)
 
-    // NEW: Gas giant measurements (validated)
+    // Gas giant measurements (validated)
     const massJupiter =
       raw.pl_massj && raw.pl_massj > 0
         ? Math.min(raw.pl_massj, 80) // 0-80 Jupiter masses (brown dwarf limit)
@@ -194,24 +261,14 @@ export class ApiManager {
       stellarLuminosity: stellarLuminosity,
       ra: ra, // Right Ascension in degrees
       dec: dec, // Declination in degrees
-
-      // NEW: Orbital mechanics data
       orbitalInclination: orbitalInclination,
       longitudeOfPeriastron: longitudeOfPeriastron,
-
-      // NEW: Discovery context
       discoveryMethod: discoveryMethod,
       discoveryFacility: discoveryFacility,
-
-      // NEW: System context
       numberOfStars: numberOfStars,
       numberOfPlanets: numberOfPlanets,
-
-      // NEW: Enhanced stellar properties
       spectralType: spectralType,
       stellarAge: stellarAge,
-
-      // NEW: Gas giant measurements
       massJupiter: massJupiter,
       radiusJupiter: radiusJupiter,
 
