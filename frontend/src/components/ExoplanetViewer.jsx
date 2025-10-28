@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import '../styles/ExoplanetViewer.scss';
 import { SceneManager } from '../lib/SceneManager';
 import { PlanetRenderer } from '../lib/PlanetRenderer';
 import { SystemRenderer } from '../lib/SystemRenderer';
