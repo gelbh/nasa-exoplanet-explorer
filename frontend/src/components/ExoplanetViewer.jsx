@@ -173,6 +173,16 @@ const ExoplanetViewer = () => {
     return () => clearInterval(interval);
   }, [currentPlanet, currentSystem, viewMode]);
 
+  // Update Info tab whenever planet/system/view changes
+  useEffect(() => {
+    if (updateInfoTab) {
+      updateInfoTab(viewMode, {
+        currentSystem: currentSystem,
+        currentPlanet: currentPlanet,
+      });
+    }
+  }, [currentPlanet, currentSystem, viewMode, updateInfoTab]);
+
   // ============================================
   // CUSTOM HOOKS - CANVAS INTERACTION
   // ============================================
@@ -436,7 +446,7 @@ const ExoplanetViewer = () => {
   useEffect(() => {
     // Initialize new feature managers
     bookmarkManagerRef.current = new BookmarkManager();
-    
+
     // Initialize all managers
     initializeDataManagers();
     initializeUIManagers(domRefs.canvasRef, domRefs.infoContentRef);
@@ -558,7 +568,9 @@ const ExoplanetViewer = () => {
   };
 
   const handleRemoveFromComparison = (planet) => {
-    setComparisonPlanets(comparisonPlanets.filter((p) => p.name !== planet.name));
+    setComparisonPlanets(
+      comparisonPlanets.filter((p) => p.name !== planet.name)
+    );
   };
 
   const handleClearComparison = () => {
