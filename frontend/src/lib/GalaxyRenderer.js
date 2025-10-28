@@ -35,28 +35,35 @@ export class GalaxyRenderer {
    * @param {Array} systems - Array of star system data
    */
   renderGalaxy(systems) {
+    console.log('🌌 GalaxyRenderer.renderGalaxy called with', systems.length, 'systems');
     // Clean up any existing galaxy
     this.cleanup();
 
     if (!systems || systems.length === 0) {
+      console.warn('⚠️ No systems to render');
       return;
     }
 
     this.starSystems = systems;
 
     // Add realistic Milky Way structure
+    console.log('🌠 Adding Milky Way structure...');
     this.addMilkyWayStructure();
 
     // Add galactic center (visual reference point for our Sun/Solar System)
+    console.log('☀️ Adding galactic center...');
     this.addGalacticCenter();
 
     // Add marker for actual galactic center (Sagittarius A*)
+    console.log('⚫ Adding Sagittarius A* marker...');
     this.addGalacticCenterMarker();
 
     // Render each star system
+    console.log('🌟 Rendering', systems.length, 'star systems...');
     systems.forEach((system, index) => {
       this.renderStarSystem(system, index, systems.length);
     });
+    console.log('✅ Galaxy rendering complete. Scene children:', this.scene.children.length);
 
     // Make the galactic center (Sun) clickable by storing its system data
     if (this.galacticCenter) {

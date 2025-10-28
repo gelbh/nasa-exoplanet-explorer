@@ -187,8 +187,8 @@ const ExoplanetViewer = () => {
       }
 
       // Remove all event listeners
-      if (canvasRef.current && boundEventListenersRef.current) {
-        const canvas = canvasRef.current;
+      if (sceneManagerRef.current && sceneManagerRef.current.renderer && boundEventListenersRef.current) {
+        const canvas = sceneManagerRef.current.renderer.domElement;
         canvas.removeEventListener('click', boundEventListenersRef.current.canvasClick);
         canvas.removeEventListener('mousedown', boundEventListenersRef.current.canvasMouseDown);
         canvas.removeEventListener('mouseup', boundEventListenersRef.current.canvasMouseUp);
@@ -287,6 +287,10 @@ const ExoplanetViewer = () => {
     mouseRef.current = new THREE.Vector2();
 
     // Add event listeners with stored references for cleanup
+    // Get the actual canvas element created by Three.js
+    const canvas = sceneManagerRef.current.renderer.domElement;
+    console.log('📎 Attaching event listeners to canvas:', canvas);
+
     boundEventListenersRef.current.canvasClick = (event) => onCanvasClick(event);
     boundEventListenersRef.current.canvasMouseDown = (event) => onCanvasMouseDown(event);
     boundEventListenersRef.current.canvasMouseUp = () => onCanvasMouseUp();
@@ -304,13 +308,13 @@ const ExoplanetViewer = () => {
       }
     };
 
-    canvasRef.current.addEventListener('click', boundEventListenersRef.current.canvasClick);
-    canvasRef.current.addEventListener('mousedown', boundEventListenersRef.current.canvasMouseDown);
-    canvasRef.current.addEventListener('mouseup', boundEventListenersRef.current.canvasMouseUp);
-    canvasRef.current.addEventListener('mousemove', boundEventListenersRef.current.canvasMouseMove);
-    canvasRef.current.addEventListener('mouseleave', boundEventListenersRef.current.canvasMouseLeave);
-    canvasRef.current.addEventListener('contextmenu', boundEventListenersRef.current.canvasContextMenu);
-    canvasRef.current.addEventListener('wheel', boundEventListenersRef.current.canvasWheel);
+    canvas.addEventListener('click', boundEventListenersRef.current.canvasClick);
+    canvas.addEventListener('mousedown', boundEventListenersRef.current.canvasMouseDown);
+    canvas.addEventListener('mouseup', boundEventListenersRef.current.canvasMouseUp);
+    canvas.addEventListener('mousemove', boundEventListenersRef.current.canvasMouseMove);
+    canvas.addEventListener('mouseleave', boundEventListenersRef.current.canvasMouseLeave);
+    canvas.addEventListener('contextmenu', boundEventListenersRef.current.canvasContextMenu);
+    canvas.addEventListener('wheel', boundEventListenersRef.current.canvasWheel);
 
     // Listen for visibility changes to pause animation when tab is hidden
     boundEventListenersRef.current.visibilityChange = () => handleVisibilityChange();
