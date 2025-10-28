@@ -90,7 +90,7 @@ const ComparisonTool = ({
             <>
               <button
                 className="btn btn-sm btn-primary"
-                onClick={onViewIn3D}
+                onClick={() => onViewIn3D(planetsToCompare)}
                 aria-label="View comparison in 3D"
                 title="View these planets side-by-side in 3D"
               >

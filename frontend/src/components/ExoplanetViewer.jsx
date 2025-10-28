@@ -581,22 +581,36 @@ const ExoplanetViewer = () => {
   };
 
   const handleClearComparison = () => {
+    console.log("🧹 Clearing comparison...");
     setComparisonPlanets([]);
+    
     // Exit comparison view if active
     if (viewModeRef.current === "comparison") {
+      console.log("Exiting comparison view...");
+      
+      // Hide comparison renderer
+      if (comparisonRendererRef.current) {
+        comparisonRendererRef.current.hide();
+        comparisonRendererRef.current.clearComparison();
+      }
+      
+      // Return to galaxy view
       switchToGalaxyView();
     }
   };
 
-  const handleViewComparisonIn3D = () => {
+  const handleViewComparisonIn3D = (planetsToView) => {
     console.log("🚀 Starting 3D comparison view...");
-
-    if (!comparisonPlanets || comparisonPlanets.length === 0) {
+    
+    // Use the planets passed from ComparisonTool (includes Earth if toggled)
+    const planetsToCompare = planetsToView || comparisonPlanets;
+    
+    if (!planetsToCompare || planetsToCompare.length === 0) {
       console.warn("No planets to compare");
       return;
     }
 
-    console.log("Planets to compare:", comparisonPlanets);
+    console.log("Planets to compare:", planetsToCompare);
 
     // Hide other renderers
     if (galaxyRendererRef.current) {
@@ -609,8 +623,8 @@ const ExoplanetViewer = () => {
       planetRendererRef.current.cleanup();
     }
 
-    // Setup comparison view
-    comparisonRendererRef.current.setupComparison(comparisonPlanets);
+    // Setup comparison view with the planets array (includes Earth if enabled)
+    comparisonRendererRef.current.setupComparison(planetsToCompare);
     comparisonRendererRef.current.show();
 
     // Update controls target

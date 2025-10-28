@@ -12,12 +12,14 @@ export class ComparisonRenderer {
     this.planetRenderer = new PlanetRenderer(scene, camera);
     this.comparisonGroup = new THREE.Group();
     this.comparisonGroup.name = "ComparisonGroup";
+    this.comparisonGroup.visible = false; // Start hidden
     this.scene.add(this.comparisonGroup);
     this.planets = [];
     this.labelSprites = [];
     this.animationFrameCount = 0;
     this.comparisonLight = null;
     this.ambientLight = null;
+    console.log("📦 ComparisonRenderer initialized");
   }
 
   /**
@@ -274,6 +276,9 @@ export class ComparisonRenderer {
    */
   show() {
     this.comparisonGroup.visible = true;
+    if (this.comparisonLight) this.comparisonLight.visible = true;
+    if (this.ambientLight) this.ambientLight.visible = true;
+    console.log("👁️ Comparison view shown");
   }
 
   /**
@@ -281,6 +286,9 @@ export class ComparisonRenderer {
    */
   hide() {
     this.comparisonGroup.visible = false;
+    if (this.comparisonLight) this.comparisonLight.visible = false;
+    if (this.ambientLight) this.ambientLight.visible = false;
+    console.log("🙈 Comparison view hidden");
   }
 
   /**
