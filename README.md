@@ -277,22 +277,6 @@ Planets are automatically classified based on their physical properties:
 
 ## Development
 
-### Running with Docker
-
-```bash
-# Build and run all services
-docker-compose up --build
-
-# Run in detached mode
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
 ### Running Tests
 
 ```bash
