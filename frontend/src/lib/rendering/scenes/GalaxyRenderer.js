@@ -20,7 +20,7 @@ export class GalaxyRenderer {
     this.starSystems = [];
     this.systemMeshes = [];
     this.systemLabels = [];
-    this.galacticCenter = null;
+    this.sunReference = null;
     this.milkyWayStructure = null; // Visual representation of galaxy structure
     this.galacticCenterMarker = null; // Sagittarius A* marker
     this.spiralArms = []; // Visual spiral arm structures
@@ -51,8 +51,8 @@ export class GalaxyRenderer {
       // Add realistic Milky Way structure
       this.addMilkyWayStructure();
 
-      // Add galactic center (visual reference point for our Sun/Solar System)
-      this.addGalacticCenter();
+      // Add Sun reference at origin (Earth/Sun at (0,0,0), not the galactic center)
+      this.addSunReference();
 
       // Add marker for actual galactic center (Sagittarius A*)
       this.addGalacticCenterMarker();
@@ -65,15 +65,15 @@ export class GalaxyRenderer {
       this.renderStarSystem(system, index, systems.length);
     });
 
-    // Make the galactic center (Sun) clickable by storing its system data
-    if (this.galacticCenter) {
+    // Make the Sun reference clickable by storing its system data
+    if (this.sunReference) {
       const solarSystem = systems.find((sys) => sys.starName === "Sun");
       if (solarSystem) {
-        this.galacticCenter.userData.isStarSystem = true;
-        this.galacticCenter.userData.systemData = solarSystem;
+        this.sunReference.userData.isStarSystem = true;
+        this.sunReference.userData.systemData = solarSystem;
         // Only add to systemMeshes if not already present
-        if (!this.systemMeshes.includes(this.galacticCenter)) {
-          this.systemMeshes.push(this.galacticCenter);
+        if (!this.systemMeshes.includes(this.sunReference)) {
+          this.systemMeshes.push(this.sunReference);
         }
       }
     }
@@ -290,11 +290,11 @@ export class GalaxyRenderer {
   }
 
   /**
-   * Add a visual representation of the Sun (Solar System at galactic center)
+   * Add a visual representation of the Sun at the origin (Earth's position)
    */
-  addGalacticCenter() {
+  addSunReference() {
     // Don't add if already exists
-    if (this.galacticCenter) {
+    if (this.sunReference) {
       return;
     }
     if (this.useRealisticStars) {
@@ -306,7 +306,7 @@ export class GalaxyRenderer {
         stellarLuminosity: 1.0,
       };
 
-      this.galacticCenter = this.starRenderer.createRealisticStar(
+      this.sunReference = this.starRenderer.createRealisticStar(
         solarData,
         new THREE.Vector3(0, 0, 0),
         {
@@ -318,8 +318,8 @@ export class GalaxyRenderer {
       );
 
       // Scale for galaxy view
-      this.galacticCenter.scale.setScalar(3.0);
-      this.scene.add(this.galacticCenter);
+      this.sunReference.scale.setScalar(3.0);
+      this.scene.add(this.sunReference);
     } else {
       // Legacy rendering
       const geometry = new THREE.SphereGeometry(1.5, 64, 64);
@@ -330,20 +330,26 @@ export class GalaxyRenderer {
         depthWrite: true,
       });
 
-      this.galacticCenter = new THREE.Mesh(geometry, material);
-      this.galacticCenter.position.set(0, 0, 0);
-      this.scene.add(this.galacticCenter);
+      this.sunReference = new THREE.Mesh(geometry, material);
+      this.sunReference.position.set(0, 0, 0);
+      this.scene.add(this.sunReference);
 
       // Store reference to ensure we can verify the galactic center still exists when texture loads
-      const galacticCenterMesh = this.galacticCenter;
+      const galacticCenterMesh = this.sunReference;
 
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load(
         "/textures/planets/sun.jpg",
         (texture) => {
-          // Verify the galactic center still exists and hasn't been cleaned up
-          if (!galacticCenterMesh || !galacticCenterMesh.parent || galacticCenterMesh.material !== material) {
-            console.warn("Galactic center was cleaned up before texture loaded");
+          // Verify the Sun reference still exists and hasn't been cleaned up
+          if (
+            !galacticCenterMesh ||
+            !galacticCenterMesh.parent ||
+            galacticCenterMesh.material !== material
+          ) {
+            console.warn(
+              "Galactic center was cleaned up before texture loaded"
+            );
             texture.dispose();
             return;
           }
@@ -360,9 +366,11 @@ export class GalaxyRenderer {
 
           // Force material update
           galacticCenterMesh.material = material; // Reassign to ensure mesh uses updated material
-          
+
           // Log for debugging
-          console.log("Galactic center sun texture loaded and applied successfully");
+          console.log(
+            "Galactic center sun texture loaded and applied successfully"
+          );
         },
         undefined,
         (_error) => {
@@ -379,7 +387,7 @@ export class GalaxyRenderer {
    * Render a single star system in the galaxy
    */
   renderStarSystem(system, index, totalSystems) {
-    // Skip the Solar System - it's rendered as the galactic center
+    // Skip the Solar System - it's rendered as the Sun reference at origin
     if (system.starName === "Sun") {
       return;
     }
@@ -452,12 +460,17 @@ export class GalaxyRenderer {
     const earthScaledDist = Math.log10(earthDistanceFromGC + 1) * 15;
 
     if (ra === null || dec === null || ra === undefined || dec === undefined) {
-      console.warn("Missing RA/Dec for system:", system.starName || system.name || "Unknown");
+      console.warn(
+        "Missing RA/Dec for system:",
+        system.starName || system.name || "Unknown"
+      );
       // Generate deterministic position based on system name to keep it consistent
-      const seed = system.starName ? system.starName.charCodeAt(0) : Math.random();
-      const theta = (seed % 360) * Math.PI / 180;
-      const height = (Math.sin(seed) * 0.5) * 4;
-      const radius = (Math.abs(Math.cos(seed)) * 10) + earthScaledDist - 5;
+      const seed = system.starName
+        ? system.starName.charCodeAt(0)
+        : Math.random();
+      const theta = ((seed % 360) * Math.PI) / 180;
+      const height = Math.sin(seed) * 0.5 * 4;
+      const radius = Math.abs(Math.cos(seed)) * 10 + earthScaledDist - 5;
       return new THREE.Vector3(
         radius * Math.cos(theta),
         height,
@@ -658,11 +671,11 @@ export class GalaxyRenderer {
       this.starRenderer.animateStars(deltaTime);
     } else {
       // Legacy animation
-      // Rotate the Sun at galactic center
-      if (this.galacticCenter) {
-        this.galacticCenter.rotation.y += deltaTime * 0.05;
+      // Rotate the Sun reference at origin
+      if (this.sunReference) {
+        this.sunReference.rotation.y += deltaTime * 0.05;
         const pulse = Math.sin(time * 0.5) * 0.1 + 1.0;
-        this.galacticCenter.scale.setScalar(pulse);
+        this.sunReference.scale.setScalar(pulse);
       }
 
       // Subtle pulsing of stars (twinkling effect)
@@ -741,14 +754,14 @@ export class GalaxyRenderer {
       }
     });
 
-    // Update galactic center quality if present
-    if (this.galacticCenter && this.galacticCenter.material) {
+    // Update Sun reference quality if present
+    if (this.sunReference && this.sunReference.material) {
       if (high) {
-        this.galacticCenter.material.flatShading = false;
+        this.sunReference.material.flatShading = false;
       } else {
-        this.galacticCenter.material.flatShading = true;
+        this.sunReference.material.flatShading = true;
       }
-      this.galacticCenter.material.needsUpdate = true;
+      this.sunReference.material.needsUpdate = true;
     }
   }
 
@@ -756,13 +769,13 @@ export class GalaxyRenderer {
    * Cleanup only star systems (keep basic structure)
    */
   cleanupStarSystems() {
-    // Remove system meshes only (exclude galactic center which should persist)
+    // Remove system meshes only (exclude Sun reference which should persist)
     this.systemMeshes.forEach((mesh) => {
-      // Don't dispose of the galactic center - it's part of the basic structure
-      if (mesh === this.galacticCenter) {
+      // Don't dispose of the Sun reference - it's part of the basic structure
+      if (mesh === this.sunReference) {
         return;
       }
-      
+
       this.scene.remove(mesh);
       if (mesh.geometry) mesh.geometry.dispose();
       if (mesh.material) {
@@ -773,9 +786,11 @@ export class GalaxyRenderer {
         }
       }
     });
-    
-    // Remove all system meshes from array except galactic center
-    this.systemMeshes = this.systemMeshes.filter(mesh => mesh === this.galacticCenter);
+
+    // Remove all system meshes from array except Sun reference
+    this.systemMeshes = this.systemMeshes.filter(
+      (mesh) => mesh === this.sunReference
+    );
     this.starSystems = [];
   }
 
@@ -798,15 +813,15 @@ export class GalaxyRenderer {
     this.systemMeshes = [];
 
     // Remove Sun/Solar System representation
-    if (this.galacticCenter) {
-      this.scene.remove(this.galacticCenter);
-      if (this.galacticCenter.geometry) this.galacticCenter.geometry.dispose();
-      if (this.galacticCenter.material) this.galacticCenter.material.dispose();
-      this.galacticCenter.children.forEach((child) => {
+    if (this.sunReference) {
+      this.scene.remove(this.sunReference);
+      if (this.sunReference.geometry) this.sunReference.geometry.dispose();
+      if (this.sunReference.material) this.sunReference.material.dispose();
+      this.sunReference.children.forEach((child) => {
         if (child.geometry) child.geometry.dispose();
         if (child.material) child.material.dispose();
       });
-      this.galacticCenter = null;
+      this.sunReference = null;
     }
 
     // Remove Milky Way structure

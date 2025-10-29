@@ -65,7 +65,7 @@ export const useThreeJSScene = (canvasRef, canvasLoadingRef) => {
     if (!galaxyRendererRef.current) return;
 
     galaxyRendererRef.current.addMilkyWayStructure();
-    galaxyRendererRef.current.addGalacticCenter();
+    galaxyRendererRef.current.addSunReference();
     galaxyRendererRef.current.addGalacticCenterMarker();
 
     const initialDistance = 100;
