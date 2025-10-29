@@ -207,6 +207,10 @@ export class BookmarkManager {
    * @returns {Function} Unsubscribe function
    */
   subscribe(callback) {
+    if (typeof callback !== "function") {
+      console.error("BookmarkManager.subscribe: callback must be a function");
+      return () => {}; // Return no-op unsubscribe function
+    }
     this.listeners.push(callback);
     return () => {
       this.listeners = this.listeners.filter((cb) => cb !== callback);
