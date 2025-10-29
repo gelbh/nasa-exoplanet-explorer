@@ -186,9 +186,17 @@ export class BookmarkManager {
         this.bookmarks.map((b) => `${b.name}-${b.type}`)
       );
 
-      const newBookmarks = data.bookmarks.filter(
-        (b) => !existingNames.has(`${b.name}-${b.type}`)
-      );
+      const newBookmarks = data.bookmarks
+        .filter((b) => !existingNames.has(`${b.name}-${b.type}`))
+        .map((bookmark) => {
+          // Validate and normalize bookmark structure
+          return {
+            name: bookmark.name || "Unknown",
+            type: bookmark.type || "planet",
+            timestamp: this.validateTimestamp(bookmark.timestamp),
+            data: bookmark.data || {},
+          };
+        });
 
       this.bookmarks = [...this.bookmarks, ...newBookmarks];
       this.saveBookmarks();
@@ -199,6 +207,29 @@ export class BookmarkManager {
       console.error("Error importing bookmarks:", error);
       return false;
     }
+  }
+
+  /**
+   * Validate and normalize timestamp
+   * @param {*} timestamp - Timestamp to validate (can be number, string, or Date)
+   * @returns {number} Valid timestamp in milliseconds
+   */
+  validateTimestamp(timestamp) {
+    // If already a valid number
+    if (typeof timestamp === "number" && !isNaN(timestamp) && timestamp > 0) {
+      return timestamp;
+    }
+    
+    // Try to parse string or Date
+    if (timestamp) {
+      const parsed = new Date(timestamp).getTime();
+      if (!isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+    
+    // Default to current time if invalid
+    return Date.now();
   }
 
   /**
