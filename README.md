@@ -307,14 +307,38 @@ npm run type-check
 
 ## Deployment
 
-### Frontend (Vercel)
-The frontend is configured for Vercel deployment with automatic builds on push to main.
+The application is deployed using platform-native builds (no Docker required):
 
-### Backend (Render)
-The backend is configured for Render deployment with the included `render.yaml`.
+### Frontend - Vercel
 
-### Docker Deployment
-Use the provided Dockerfiles for containerized deployment to any platform.
+**Live URL:** [https://nasa-exoplanet-explorer.vercel.app/](https://nasa-exoplanet-explorer.vercel.app/)
+
+The frontend is automatically deployed to Vercel on push to `main`:
+
+- **Build Command:** `npm run build` (runs Vite production build)
+- **Output Directory:** `dist/`
+- **Configuration:** `vercel.json` handles SPA routing and cache headers
+- **Deployment:** Automatic on git push
+
+### Backend - Render
+
+**Live URL:** [https://nasa-exoplanet-explorer.onrender.com/](https://nasa-exoplanet-explorer.onrender.com/)
+
+The backend is deployed to Render using native Node.js runtime:
+
+- **Configuration:** `backend/render.yaml`
+- **Build Command:** `npm install`
+- **Start Command:** `npm start`
+- **Health Check:** `/api/health` endpoint
+- **Environment:** Node.js 18+ production environment
+
+### Manual Deployment
+
+To deploy to other platforms:
+
+1. **Frontend:** Build with `npm run build` and serve the `frontend/dist` folder
+2. **Backend:** Run `npm install` and `npm start` with Node.js 18+
+3. Set environment variable `CORS_ORIGIN` to your frontend URL
 
 ## API Documentation
 
