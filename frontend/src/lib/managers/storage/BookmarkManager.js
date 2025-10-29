@@ -137,9 +137,16 @@ export class BookmarkManager {
 
   /**
    * Clear all bookmarks
+   * @param {boolean} skipConfirm - Skip confirmation dialog (for testing/programmatic use)
    */
-  clearAll() {
-    if (confirm("Are you sure you want to clear all bookmarks?")) {
+  clearAll(skipConfirm = false) {
+    // Check if we're in a browser environment before using confirm()
+    const shouldClear = skipConfirm || 
+      (typeof window !== "undefined" && 
+       typeof window.confirm === "function" && 
+       window.confirm("Are you sure you want to clear all bookmarks?"));
+    
+    if (shouldClear) {
       this.bookmarks = [];
       this.saveBookmarks();
       console.log("🗑️ All bookmarks cleared");
