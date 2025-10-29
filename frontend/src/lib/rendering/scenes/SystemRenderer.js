@@ -608,20 +608,28 @@ export class SystemRenderer {
           return;
         }
 
-        // Configure texture properties
+        // Configure texture properties BEFORE assigning to material
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         texture.flipY = false;
+        texture.needsUpdate = true; // Mark texture for GPU upload
 
         // Apply texture to material
         starMaterial.map = texture;
         starMaterial.color.setHex(0xffffff); // Set to white so texture shows true colors
         starMaterial.needsUpdate = true;
+
+        // Force material and texture update
+        sunMesh.material = starMaterial; // Reassign to ensure mesh uses updated material
+        
+        // Log for debugging
+        console.log("Sun texture loaded and applied successfully");
       },
       undefined,
       (_error) => {
         console.warn(
-          "Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/"
+          "Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/",
+          _error
         );
       }
     );
