@@ -16,20 +16,59 @@ export class ExportManager {
     const baseUrl = window.location.origin + window.location.pathname;
     const params = new URLSearchParams();
 
+    // Validate and sanitize mode (allow only specific values)
     if (viewState.mode) {
-      params.set("mode", viewState.mode);
+      const allowedModes = ["galaxy", "system", "planet"];
+      const sanitizedMode = String(viewState.mode).toLowerCase();
+      if (allowedModes.includes(sanitizedMode)) {
+        params.set("mode", sanitizedMode);
+      }
     }
 
+    // Validate and sanitize planet name (alphanumeric, spaces, hyphens, dots, parentheses)
     if (viewState.planet) {
-      params.set("planet", viewState.planet);
+      const sanitizedPlanet = String(viewState.planet)
+        .replace(/[^a-zA-Z0-9\s\-_.()]/g, "")
+        .substring(0, 100); // Limit length
+      if (sanitizedPlanet) {
+        params.set("planet", sanitizedPlanet);
+      }
     }
 
+    // Validate and sanitize system name (alphanumeric, spaces, hyphens, dots, parentheses)
     if (viewState.system) {
-      params.set("system", viewState.system);
+      const sanitizedSystem = String(viewState.system)
+        .replace(/[^a-zA-Z0-9\s\-_.()]/g, "")
+        .substring(0, 100); // Limit length
+      if (sanitizedSystem) {
+        params.set("system", sanitizedSystem);
+      }
     }
 
-    if (viewState.camera) {
-      params.set("camera", JSON.stringify(viewState.camera));
+    // Validate camera object structure before stringifying
+    if (viewState.camera && typeof viewState.camera === "object") {
+      try {
+        // Only include numeric x, y, z coordinates
+        const camera = {};
+        if (typeof viewState.camera.x === "number" && !isNaN(viewState.camera.x)) {
+          camera.x = viewState.camera.x;
+        }
+        if (typeof viewState.camera.y === "number" && !isNaN(viewState.camera.y)) {
+          camera.y = viewState.camera.y;
+        }
+        if (typeof viewState.camera.z === "number" && !isNaN(viewState.camera.z)) {
+          camera.z = viewState.camera.z;
+        }
+        if (Object.keys(camera).length > 0) {
+          const cameraString = JSON.stringify(camera);
+          // Limit JSON string length for security
+          if (cameraString.length < 200) {
+            params.set("camera", cameraString);
+          }
+        }
+      } catch (error) {
+        console.warn("Invalid camera data, skipping in URL");
+      }
     }
 
     const url = `${baseUrl}?${params.toString()}`;
@@ -45,21 +84,55 @@ export class ExportManager {
     const params = new URLSearchParams(window.location.search);
     const state = {};
 
+    // Validate and sanitize mode
     if (params.has("mode")) {
-      state.mode = params.get("mode");
+      const allowedModes = ["galaxy", "system", "planet"];
+      const mode = String(params.get("mode")).toLowerCase();
+      if (allowedModes.includes(mode)) {
+        state.mode = mode;
+      }
     }
 
+    // Validate and sanitize planet name
     if (params.has("planet")) {
-      state.planet = params.get("planet");
+      const planet = String(params.get("planet"))
+        .replace(/[^a-zA-Z0-9\s\-_.()]/g, "")
+        .substring(0, 100);
+      if (planet) {
+        state.planet = planet;
+      }
     }
 
+    // Validate and sanitize system name
     if (params.has("system")) {
-      state.system = params.get("system");
+      const system = String(params.get("system"))
+        .replace(/[^a-zA-Z0-9\s\-_.()]/g, "")
+        .substring(0, 100);
+      if (system) {
+        state.system = system;
+      }
     }
 
+    // Validate camera data
     if (params.has("camera")) {
       try {
-        state.camera = JSON.parse(params.get("camera"));
+        const cameraData = JSON.parse(params.get("camera"));
+        // Only accept object with numeric x, y, z properties
+        if (typeof cameraData === "object" && cameraData !== null) {
+          const camera = {};
+          if (typeof cameraData.x === "number" && !isNaN(cameraData.x)) {
+            camera.x = cameraData.x;
+          }
+          if (typeof cameraData.y === "number" && !isNaN(cameraData.y)) {
+            camera.y = cameraData.y;
+          }
+          if (typeof cameraData.z === "number" && !isNaN(cameraData.z)) {
+            camera.z = cameraData.z;
+          }
+          if (Object.keys(camera).length > 0) {
+            state.camera = camera;
+          }
+        }
       } catch (_e) {
         console.warn("Failed to parse camera state from URL");
       }
