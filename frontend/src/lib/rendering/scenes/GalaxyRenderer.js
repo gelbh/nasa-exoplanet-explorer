@@ -71,7 +71,10 @@ export class GalaxyRenderer {
       if (solarSystem) {
         this.galacticCenter.userData.isStarSystem = true;
         this.galacticCenter.userData.systemData = solarSystem;
-        this.systemMeshes.push(this.galacticCenter);
+        // Only add to systemMeshes if not already present
+        if (!this.systemMeshes.includes(this.galacticCenter)) {
+          this.systemMeshes.push(this.galacticCenter);
+        }
       }
     }
 
