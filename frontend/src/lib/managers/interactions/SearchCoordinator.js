@@ -10,6 +10,7 @@ export class SearchCoordinator {
     this.uiManager = uiManager;
     this.targets = targets;
     this.searchTimeout = null;
+    this.filterTimeout = null;
   }
 
   /**
@@ -55,34 +56,41 @@ export class SearchCoordinator {
   }
 
   /**
-   * Apply filters based on current mode
+   * Apply filters based on current mode (debounced)
    */
   applyFilters() {
-    const filterMode = this.targets.filterMode.value;
-
-    if (filterMode === "planets") {
-      const filters = {
-        type: this.targets.typeFilter.value,
-        tempMin: this.targets.tempMin.value,
-        tempMax: this.targets.tempMax.value,
-        distMax: this.targets.distanceMax.value,
-        discoveryMethod: this.targets.discoveryMethodFilter.value,
-        discoveryFacility: this.targets.discoveryFacilityFilter.value,
-      };
-
-      this.filterManager.applyFilters(filters);
-      const results = this.filterManager.searchUnified("");
-      this.uiManager.updateUnifiedResultsList(results);
-    } else {
-      const systemFilters = {
-        minPlanets: this.targets.minPlanets.value,
-        distMax: this.targets.systemDistanceMax.value,
-        spectralType: this.targets.spectralTypeFilter.value,
-      };
-
-      const results = this.filterManager.applySystemFilters(systemFilters);
-      this.uiManager.updateUnifiedResultsList(results);
+    // Clear existing timeout to debounce rapid filter changes
+    if (this.filterTimeout) {
+      clearTimeout(this.filterTimeout);
     }
+
+    this.filterTimeout = setTimeout(() => {
+      const filterMode = this.targets.filterMode.value;
+
+      if (filterMode === "planets") {
+        const filters = {
+          type: this.targets.typeFilter.value,
+          tempMin: this.targets.tempMin.value,
+          tempMax: this.targets.tempMax.value,
+          distMax: this.targets.distanceMax.value,
+          discoveryMethod: this.targets.discoveryMethodFilter.value,
+          discoveryFacility: this.targets.discoveryFacilityFilter.value,
+        };
+
+        this.filterManager.applyFilters(filters);
+        const results = this.filterManager.searchUnified("");
+        this.uiManager.updateUnifiedResultsList(results);
+      } else {
+        const systemFilters = {
+          minPlanets: this.targets.minPlanets.value,
+          distMax: this.targets.systemDistanceMax.value,
+          spectralType: this.targets.spectralTypeFilter.value,
+        };
+
+        const results = this.filterManager.applySystemFilters(systemFilters);
+        this.uiManager.updateUnifiedResultsList(results);
+      }
+    }, 200); // 200ms debounce for filter operations
   }
 
   /**
@@ -114,6 +122,10 @@ export class SearchCoordinator {
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
       this.searchTimeout = null;
+    }
+    if (this.filterTimeout) {
+      clearTimeout(this.filterTimeout);
+      this.filterTimeout = null;
     }
   }
 }
