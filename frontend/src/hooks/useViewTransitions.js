@@ -211,16 +211,17 @@ export const useViewTransitions = ({
       infoTabManagerRef.current?.settingsManager?.useOrbitalInclination || false
     );
 
+    // Reapply settings after rendering new system
+    if (infoTabManagerRef.current?.settingsManager) {
+      infoTabManagerRef.current.settingsManager.reapplySystemSettings();
+    }
+
     const maxRadius = systemInfo.maxOrbitRadius * systemInfo.scaleFactor;
-    const cameraDistance =
-      sceneManagerRef.current.calculateOptimalCameraDistance(
-        maxRadius,
-        true,
-        maxRadius
-      );
+    // Remove distance clamping for system view to allow large systems to be fully visible
+    const cameraDistance = Math.max(15, maxRadius * 3.0);
 
     sceneManagerRef.current.smoothCameraTransition(
-      new THREE.Vector3(0, cameraDistance * 0.3, cameraDistance),
+      new THREE.Vector3(0, cameraDistance * 0.4, cameraDistance * 0.9),
       1500,
       () => {
         cameraManagerRef.current.updateLastCameraDistance(cameraDistance);
