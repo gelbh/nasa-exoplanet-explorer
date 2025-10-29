@@ -71,13 +71,13 @@ export class ExportManager {
         if (Object.keys(camera).length > 0) {
           const cameraString = JSON.stringify(camera);
           // Limit JSON string length for security
-          if (cameraString.length < 200) {
-            params.set("camera", cameraString);
-          }
+        if (cameraString.length < 200) {
+          params.set("camera", cameraString);
         }
-      } catch (error) {
-        console.warn("Invalid camera data, skipping in URL");
       }
+    } catch (_error) {
+      console.warn("Invalid camera data, skipping in URL");
+    }
     }
 
     const url = `${baseUrl}?${params.toString()}`;
