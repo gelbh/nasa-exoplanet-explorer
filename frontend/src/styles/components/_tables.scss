@@ -2,7 +2,7 @@
 // TABLE STYLING
 // ============================================
 
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 .exoplanet-viewer-page {
   // Info panel tables
@@ -72,7 +72,11 @@
 
     tbody {
       tr {
-        @include transition(background-color, $transition-normal, $easing-standard);
+        @include transition(
+          background-color,
+          $transition-normal,
+          $easing-standard
+        );
 
         &:hover {
           background-color: rgba($color-primary, 0.05);
@@ -142,4 +146,3 @@
     }
   }
 }
-

@@ -2,7 +2,7 @@
 // DRAGGABLE OVERLAY PANELS
 // ============================================
 
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 .exoplanet-overlay-panel {
   @include panel-overlay;

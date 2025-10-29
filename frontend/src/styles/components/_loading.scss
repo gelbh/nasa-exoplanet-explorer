@@ -2,7 +2,7 @@
 // LOADING INDICATOR STYLES
 // ============================================
 
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 .exoplanet-loading-overlay {
   position: absolute;
@@ -215,4 +215,3 @@
     background: linear-gradient(135deg, $bg-dark-alt 0%, #0f1420 100%);
   }
 }
-

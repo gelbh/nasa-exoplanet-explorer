@@ -2,7 +2,7 @@
 // CONTROLS AND INSTRUCTIONS OVERLAYS
 // ============================================
 
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 .exoplanet-controls-overlay {
   position: absolute;
@@ -234,4 +234,3 @@ input[name="viewMode"]:checked + label {
     }
   }
 }
-

@@ -176,7 +176,16 @@ const ExoplanetViewer = () => {
     if (transitionToPlanetFromSystem) {
       transitionToPlanetFromSystem.syncState = syncState;
     }
-  }, [currentPlanetRef, currentSystemRef, viewModeRef, selectPlanet, selectSystem, switchToGalaxyView, returnToGalaxyView, transitionToPlanetFromSystem]);
+  }, [
+    currentPlanetRef,
+    currentSystemRef,
+    viewModeRef,
+    selectPlanet,
+    selectSystem,
+    switchToGalaxyView,
+    returnToGalaxyView,
+    transitionToPlanetFromSystem,
+  ]);
 
   // Update Info tab whenever planet/system/view changes
   useEffect(() => {
@@ -226,22 +235,26 @@ const ExoplanetViewer = () => {
     );
   };
 
-  const { setupCanvasEventListeners, removeCanvasEventListeners, updateCanvasCursor, updateGalaxyCursor } =
-    useCanvasInteraction({
-      sceneManagerRef,
-      raycasterRef,
-      mouseRef,
-      cameraManagerRef,
-      tooltipManagerRef,
-      galaxyRendererRef,
-      systemRendererRef,
-      viewModeRef,
-      currentSystemRef,
-      domRefs,
-      onSystemSelect: handleSystemSelectFromCanvas,
-      onPlanetSelect: transitionToPlanetFromSystem,
-      onGalacticCenterClick: zoomToGalacticCenter,
-    });
+  const {
+    setupCanvasEventListeners,
+    removeCanvasEventListeners,
+    updateCanvasCursor,
+    updateGalaxyCursor,
+  } = useCanvasInteraction({
+    sceneManagerRef,
+    raycasterRef,
+    mouseRef,
+    cameraManagerRef,
+    tooltipManagerRef,
+    galaxyRendererRef,
+    systemRendererRef,
+    viewModeRef,
+    currentSystemRef,
+    domRefs,
+    onSystemSelect: handleSystemSelectFromCanvas,
+    onPlanetSelect: transitionToPlanetFromSystem,
+    onGalacticCenterClick: zoomToGalacticCenter,
+  });
 
   // ============================================
   // CUSTOM HOOKS - SETTINGS HANDLERS
@@ -551,7 +564,7 @@ const ExoplanetViewer = () => {
       cleanupThreeJS();
       cleanupUIManagers();
       removeCanvasEventListeners();
-      
+
       // Cleanup search coordinator to prevent memory leaks
       if (searchCoordinatorRef.current) {
         searchCoordinatorRef.current.cleanup();

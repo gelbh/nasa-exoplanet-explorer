@@ -111,153 +111,157 @@ export class ApiManager {
 
     // Mark as processing before any async operations
     this.isProcessing = true;
-    
+
     // Create promise for request deduplication
     this.activeFetchPromise = (async () => {
+      try {
+        let data;
 
-    try {
-      let data;
-
-      // Try to load from cache first
-      if (this.isCacheValid()) {
-        const cached = this.loadFromCache();
-        if (cached) {
-          data = cached;
-        }
-      }
-
-      // Fetch from API if no valid cache
-      if (!data) {
-        // Retry logic with exponential backoff
-        const maxRetries = 3;
-        let lastError;
-
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-          try {
-            // Add timeout to prevent hanging forever
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-            const response = await fetch(this.apiEndpoint, {
-              signal: controller.signal,
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            data = await response.json();
-
-            // Save to cache for next time
-            this.saveToCache(data);
-            break; // Success - exit retry loop
-          } catch (error) {
-            lastError = error;
-
-            // Don't retry on abort (timeout)
-            if (error.name === "AbortError") {
-              throw new Error(
-                "Request timeout: NASA API is taking too long to respond"
-              );
-            }
-
-            // If this isn't the last attempt, wait before retrying
-            if (attempt < maxRetries - 1) {
-              const backoffDelay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5s
-              console.warn(
-                `API fetch failed (attempt ${
-                  attempt + 1
-                }/${maxRetries}). Retrying in ${backoffDelay}ms...`
-              );
-              await new Promise((resolve) => setTimeout(resolve, backoffDelay));
-            }
+        // Try to load from cache first
+        if (this.isCacheValid()) {
+          const cached = this.loadFromCache();
+          if (cached) {
+            data = cached;
           }
         }
 
-        // If we exhausted all retries, throw the last error
+        // Fetch from API if no valid cache
         if (!data) {
-          throw new Error(
-            `Failed to fetch data after ${maxRetries} attempts: ${
-              lastError?.message || "Unknown error"
-            }`
-          );
+          // Retry logic with exponential backoff
+          const maxRetries = 3;
+          let lastError;
+
+          for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+              // Add timeout to prevent hanging forever
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+              const response = await fetch(this.apiEndpoint, {
+                signal: controller.signal,
+              });
+
+              clearTimeout(timeoutId);
+
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+
+              data = await response.json();
+
+              // Save to cache for next time
+              this.saveToCache(data);
+              break; // Success - exit retry loop
+            } catch (error) {
+              lastError = error;
+
+              // Don't retry on abort (timeout)
+              if (error.name === "AbortError") {
+                throw new Error(
+                  "Request timeout: NASA API is taking too long to respond"
+                );
+              }
+
+              // If this isn't the last attempt, wait before retrying
+              if (attempt < maxRetries - 1) {
+                const backoffDelay = Math.min(
+                  1000 * Math.pow(2, attempt),
+                  5000
+                ); // Max 5s
+                console.warn(
+                  `API fetch failed (attempt ${
+                    attempt + 1
+                  }/${maxRetries}). Retrying in ${backoffDelay}ms...`
+                );
+                await new Promise((resolve) =>
+                  setTimeout(resolve, backoffDelay)
+                );
+              }
+            }
+          }
+
+          // If we exhausted all retries, throw the last error
+          if (!data) {
+            throw new Error(
+              `Failed to fetch data after ${maxRetries} attempts: ${
+                lastError?.message || "Unknown error"
+              }`
+            );
+          }
         }
-      }
 
-      // Initialize arrays
-      this.exoplanets = [];
+        // Initialize arrays
+        this.exoplanets = [];
 
-      // Process data in batches
-      const batchSize = 100;
-      let currentBatch = 0;
+        // Process data in batches
+        const batchSize = 100;
+        let currentBatch = 0;
 
-      const processBatch = () => {
-        // Exit if processing was cancelled
-        if (!this.isProcessing) return;
+        const processBatch = () => {
+          // Exit if processing was cancelled
+          if (!this.isProcessing) return;
 
-        const start = currentBatch * batchSize;
-        const end = Math.min(start + batchSize, data.length);
+          const start = currentBatch * batchSize;
+          const end = Math.min(start + batchSize, data.length);
 
-        // Process this batch of planets
-        const batchPlanets = data
-          .slice(start, end)
-          .map((planet) => this.processPlanetData(planet));
+          // Process this batch of planets
+          const batchPlanets = data
+            .slice(start, end)
+            .map((planet) => this.processPlanetData(planet));
 
-        // Add to collection
-        this.exoplanets.push(...batchPlanets);
+          // Add to collection
+          this.exoplanets.push(...batchPlanets);
 
-        // Callback for UI updates
-        if (onBatchProcessed) {
-          onBatchProcessed(batchPlanets, this.exoplanets);
-        }
+          // Callback for UI updates
+          if (onBatchProcessed) {
+            onBatchProcessed(batchPlanets, this.exoplanets);
+          }
 
-        // Move to next batch
-        currentBatch++;
+          // Move to next batch
+          currentBatch++;
 
-        // Continue processing if there are more planets
-        if (end < data.length) {
-          if ("requestIdleCallback" in window) {
-            const callbackId = requestIdleCallback(processBatch);
-            this.pendingCallbacks.push({ type: "idle", id: callbackId });
+          // Continue processing if there are more planets
+          if (end < data.length) {
+            if ("requestIdleCallback" in window) {
+              const callbackId = requestIdleCallback(processBatch);
+              this.pendingCallbacks.push({ type: "idle", id: callbackId });
+            } else {
+              // Fallback for browsers without requestIdleCallback (Safari)
+              // Use requestAnimationFrame + setTimeout to better mimic idle behavior
+              const rafId = requestAnimationFrame(() => {
+                const timeoutId = setTimeout(processBatch, 1);
+                this.pendingCallbacks.push({ type: "timeout", id: timeoutId });
+              });
+              this.pendingCallbacks.push({ type: "raf", id: rafId });
+            }
           } else {
-            // Fallback for browsers without requestIdleCallback (Safari)
-            // Use requestAnimationFrame + setTimeout to better mimic idle behavior
-            const rafId = requestAnimationFrame(() => {
-              const timeoutId = setTimeout(processBatch, 1);
-              this.pendingCallbacks.push({ type: "timeout", id: timeoutId });
-            });
-            this.pendingCallbacks.push({ type: "raf", id: rafId });
-          }
-        } else {
-          // Processing complete
-          this.isProcessing = false;
-          this.pendingCallbacks = [];
+            // Processing complete
+            this.isProcessing = false;
+            this.pendingCallbacks = [];
 
-          if (onComplete) {
-            onComplete(this.exoplanets);
+            if (onComplete) {
+              onComplete(this.exoplanets);
+            }
           }
+        };
+
+        // Start processing batches
+        processBatch();
+      } catch (error) {
+        // Clean up processing state on error
+        this.isProcessing = false;
+        this.pendingCallbacks = [];
+
+        console.error("Error fetching exoplanets:", error);
+        if (onError) {
+          onError(error);
         }
-      };
-
-      // Start processing batches
-      processBatch();
-    } catch (error) {
-      // Clean up processing state on error
-      this.isProcessing = false;
-      this.pendingCallbacks = [];
-
-      console.error("Error fetching exoplanets:", error);
-      if (onError) {
-        onError(error);
+      } finally {
+        // Clear active fetch promise for deduplication
+        this.activeFetchPromise = null;
       }
-    } finally {
-      // Clear active fetch promise for deduplication
-      this.activeFetchPromise = null;
-    }
     })(); // End of activeFetchPromise wrapper
-    
+
     // Wait for the promise to complete
     await this.activeFetchPromise;
   }

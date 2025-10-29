@@ -59,7 +59,10 @@ export const useExoplanetData = (apiEndpoint, uiRefs) => {
           );
           if (progressBar) {
             const estimatedTotal = 6000;
-            const progress = Math.min((allExoplanets.length / estimatedTotal) * 100, 100);
+            const progress = Math.min(
+              (allExoplanets.length / estimatedTotal) * 100,
+              100
+            );
             progressBar.style.width = `${progress}%`;
           }
         }

@@ -2,7 +2,7 @@
 // ACCESSIBILITY STYLES
 // ============================================
 
-@use '../abstracts' as *;
+@use "../abstracts" as *;
 
 // ============================================
 // SCREEN READER ONLY CONTENT
@@ -193,4 +193,3 @@ a:not([class]):hover {
 .keyboard-navigation select:focus {
   box-shadow: 0 0 0 3px rgba($color-primary, 0.5);
 }
-

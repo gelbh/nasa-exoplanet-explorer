@@ -6,25 +6,24 @@
 // ============================================
 // 1. ABSTRACTS - Variables and Mixins First
 // ============================================
-@use 'abstracts' as *;
+@use "abstracts" as *;
 
 // ============================================
 // 2. BASE - Reset and Defaults
 // ============================================
-@use 'base/reset';
+@use "base/reset";
 
 // ============================================
 // 3. COMPONENTS - Component-Specific Styles
 // ============================================
-@use 'components/viewer';
-@use 'components/panels';
-@use 'components/controls';
-@use 'components/forms';
-@use 'components/tables';
-@use 'components/loading';
+@use "components/viewer";
+@use "components/panels";
+@use "components/controls";
+@use "components/forms";
+@use "components/tables";
+@use "components/loading";
 
 // ============================================
 // 4. UTILITIES - Utility Classes Last
 // ============================================
-@use 'utilities/accessibility';
-
+@use "utilities/accessibility";

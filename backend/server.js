@@ -14,7 +14,9 @@ dotenv.config();
 const validatePort = (port) => {
   const parsed = parseInt(port);
   if (isNaN(parsed) || parsed < 1 || parsed > 65535) {
-    throw new Error(`Invalid PORT value: ${port}. Must be a number between 1 and 65535.`);
+    throw new Error(
+      `Invalid PORT value: ${port}. Must be a number between 1 and 65535.`
+    );
   }
   return parsed;
 };
@@ -22,7 +24,9 @@ const validatePort = (port) => {
 const validateTTL = (ttl) => {
   const parsed = parseInt(ttl);
   if (isNaN(parsed) || parsed < 0) {
-    console.warn(`Invalid CACHE_TTL value: ${ttl}. Using default: 86400 seconds.`);
+    console.warn(
+      `Invalid CACHE_TTL value: ${ttl}. Using default: 86400 seconds.`
+    );
     return 86400;
   }
   return parsed;
@@ -35,7 +39,9 @@ const validateCorsOrigin = (origin) => {
   }
   // Basic validation: check if it's a valid URL or wildcard
   if (origin !== "*" && !origin.match(/^https?:\/\//)) {
-    console.warn(`Invalid CORS_ORIGIN: ${origin}. Must start with http:// or https://. Using default.`);
+    console.warn(
+      `Invalid CORS_ORIGIN: ${origin}. Must start with http:// or https://. Using default.`
+    );
     return "http://localhost:5173";
   }
   return origin;
@@ -44,7 +50,9 @@ const validateCorsOrigin = (origin) => {
 const validateRateLimit = (value, defaultValue, name) => {
   const parsed = parseInt(value);
   if (isNaN(parsed) || parsed < 0) {
-    console.warn(`Invalid ${name} value: ${value}. Using default: ${defaultValue}`);
+    console.warn(
+      `Invalid ${name} value: ${value}. Using default: ${defaultValue}`
+    );
     return defaultValue;
   }
   return parsed;
@@ -102,8 +110,16 @@ app.use(express.json());
 
 // Rate limiting middleware
 const limiter = rateLimit({
-  windowMs: validateRateLimit(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, "RATE_LIMIT_WINDOW_MS"),
-  max: validateRateLimit(process.env.RATE_LIMIT_MAX_REQUESTS, 100, "RATE_LIMIT_MAX_REQUESTS"),
+  windowMs: validateRateLimit(
+    process.env.RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000,
+    "RATE_LIMIT_WINDOW_MS"
+  ),
+  max: validateRateLimit(
+    process.env.RATE_LIMIT_MAX_REQUESTS,
+    100,
+    "RATE_LIMIT_MAX_REQUESTS"
+  ),
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -169,26 +185,31 @@ app.get("/api/exoplanets", limiter, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error("❌ Error fetching exoplanets:", error);
-    
+
     // Differentiate between network errors and other errors
     let statusCode = 500;
     let errorType = "Failed to fetch exoplanet data";
-    
+
     // Network/upstream errors
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || 
-        error.code === 'ETIMEDOUT' || error.type === 'system') {
+    if (
+      error.code === "ECONNREFUSED" ||
+      error.code === "ENOTFOUND" ||
+      error.code === "ETIMEDOUT" ||
+      error.type === "system"
+    ) {
       statusCode = 503; // Service Unavailable
       errorType = "Upstream service unavailable";
     }
     // HTTP errors from NASA API
-    else if (error.message && error.message.includes('HTTP error')) {
+    else if (error.message && error.message.includes("HTTP error")) {
       statusCode = 502; // Bad Gateway
       errorType = "Upstream service error";
     }
-    
+
     res.status(statusCode).json({
       error: errorType,
-      message: NODE_ENV === "production" ? "Internal server error" : error.message,
+      message:
+        NODE_ENV === "production" ? "Internal server error" : error.message,
     });
   }
 });
@@ -262,31 +283,36 @@ app.get("/api/planet/:name", limiter, async (req, res) => {
     res.json(data[0]);
   } catch (error) {
     console.error("❌ Error fetching planet details:", error);
-    
+
     // Differentiate between network errors and other errors
     let statusCode = 500;
     let errorType = "Failed to fetch planet details";
-    
+
     // Network/upstream errors
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || 
-        error.code === 'ETIMEDOUT' || error.type === 'system') {
+    if (
+      error.code === "ECONNREFUSED" ||
+      error.code === "ENOTFOUND" ||
+      error.code === "ETIMEDOUT" ||
+      error.type === "system"
+    ) {
       statusCode = 503; // Service Unavailable
       errorType = "Upstream service unavailable";
     }
     // HTTP errors from NASA API
-    else if (error.message && error.message.includes('NASA API error')) {
+    else if (error.message && error.message.includes("NASA API error")) {
       statusCode = 502; // Bad Gateway
       errorType = "Upstream service error";
     }
     // Validation errors
-    else if (error.message && error.message.includes('Invalid planet name')) {
+    else if (error.message && error.message.includes("Invalid planet name")) {
       statusCode = 400; // Bad Request
       errorType = "Invalid request";
     }
-    
+
     res.status(statusCode).json({
       error: errorType,
-      message: NODE_ENV === "production" ? "Internal server error" : error.message,
+      message:
+        NODE_ENV === "production" ? "Internal server error" : error.message,
     });
   }
 });

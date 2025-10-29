@@ -50,13 +50,22 @@ export class ExportManager {
       try {
         // Only include numeric x, y, z coordinates
         const camera = {};
-        if (typeof viewState.camera.x === "number" && !isNaN(viewState.camera.x)) {
+        if (
+          typeof viewState.camera.x === "number" &&
+          !isNaN(viewState.camera.x)
+        ) {
           camera.x = viewState.camera.x;
         }
-        if (typeof viewState.camera.y === "number" && !isNaN(viewState.camera.y)) {
+        if (
+          typeof viewState.camera.y === "number" &&
+          !isNaN(viewState.camera.y)
+        ) {
           camera.y = viewState.camera.y;
         }
-        if (typeof viewState.camera.z === "number" && !isNaN(viewState.camera.z)) {
+        if (
+          typeof viewState.camera.z === "number" &&
+          !isNaN(viewState.camera.z)
+        ) {
           camera.z = viewState.camera.z;
         }
         if (Object.keys(camera).length > 0) {
@@ -176,7 +185,9 @@ export class ExportManager {
    */
   async shareViaWebAPI(shareData) {
     if (!navigator.share) {
-      console.info("Web Share API not supported on this browser. Use the URL copy button instead.");
+      console.info(
+        "Web Share API not supported on this browser. Use the URL copy button instead."
+      );
       return false;
     }
 
@@ -214,7 +225,7 @@ export class ExportManager {
     }
 
     const canvas = this.sceneManager.renderer.domElement;
-    
+
     // Store original size
     const originalWidth = canvas.width;
     const originalHeight = canvas.height;
@@ -242,7 +253,7 @@ export class ExportManager {
       // Restore original size on error
       this.sceneManager.renderer.setSize(originalWidth, originalHeight);
       this.sceneManager.render();
-      
+
       console.error("Screenshot capture failed:", error);
       throw new Error(
         "Failed to capture screenshot. This may occur if the canvas contains cross-origin images without CORS headers."
@@ -382,10 +393,13 @@ export class ExportManager {
       return "Exploring exoplanets with NASA Exoplanet Explorer 🌍🔭";
     }
 
-    const temp = planet.temperature ? `${Math.round(planet.temperature)}K` : "unknown";
-    const distance = planet.distance ? `${planet.distance.toFixed(1)}ly` : "unknown";
+    const temp = planet.temperature
+      ? `${Math.round(planet.temperature)}K`
+      : "unknown";
+    const distance = planet.distance
+      ? `${planet.distance.toFixed(1)}ly`
+      : "unknown";
 
     return `Check out ${planet.name} - an exoplanet ${distance} away with a temperature of ${temp}! 🪐🔭 #Exoplanets #Space`;
   }
 }
-

@@ -8,22 +8,24 @@ export class BookmarkManager {
     this.storageAvailable = this.checkStorageAvailability();
     this.bookmarks = this.loadBookmarks();
     this.listeners = [];
-    
+
     // Warn user if storage is not available
     if (!this.storageAvailable) {
-      console.warn("⚠️ localStorage is not available. Bookmarks will not persist across sessions.");
+      console.warn(
+        "⚠️ localStorage is not available. Bookmarks will not persist across sessions."
+      );
     }
-    
+
     // Listen for storage events from other tabs
     this.setupStorageSync();
   }
-  
+
   /**
    * Setup multi-tab synchronization via storage events
    */
   setupStorageSync() {
     if (typeof window === "undefined") return;
-    
+
     this.handleStorageChange = (event) => {
       // Only sync if the change is to our storage key and from another tab
       if (event.key === this.storageKey && event.newValue !== null) {
@@ -45,10 +47,10 @@ export class BookmarkManager {
         this.notifyListeners();
       }
     };
-    
+
     window.addEventListener("storage", this.handleStorageChange);
   }
-  
+
   /**
    * Cleanup storage event listener
    */
@@ -82,7 +84,7 @@ export class BookmarkManager {
     try {
       const stored = localStorage.getItem(this.storageKey);
       if (!stored) return [];
-      
+
       const bookmarks = JSON.parse(stored);
       console.log(`📚 Loaded ${bookmarks.length} bookmarks`);
       return Array.isArray(bookmarks) ? bookmarks : [];
@@ -100,7 +102,7 @@ export class BookmarkManager {
       console.warn("localStorage not available. Bookmarks cannot be saved.");
       return false;
     }
-    
+
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.bookmarks));
       this.notifyListeners();
@@ -164,7 +166,7 @@ export class BookmarkManager {
    */
   toggleBookmark(item, type = "planet") {
     const name = type === "planet" ? item.name : item.hostStar;
-    
+
     if (this.isBookmarked(name, type)) {
       return this.removeBookmark(name, type);
     } else {
@@ -213,11 +215,12 @@ export class BookmarkManager {
    */
   clearAll(skipConfirm = false) {
     // Check if we're in a browser environment before using confirm()
-    const shouldClear = skipConfirm || 
-      (typeof window !== "undefined" && 
-       typeof window.confirm === "function" && 
-       window.confirm("Are you sure you want to clear all bookmarks?"));
-    
+    const shouldClear =
+      skipConfirm ||
+      (typeof window !== "undefined" &&
+        typeof window.confirm === "function" &&
+        window.confirm("Are you sure you want to clear all bookmarks?"));
+
     if (shouldClear) {
       this.bookmarks = [];
       this.saveBookmarks();
@@ -248,7 +251,7 @@ export class BookmarkManager {
   importBookmarks(jsonString) {
     try {
       const data = JSON.parse(jsonString);
-      
+
       if (!data.bookmarks || !Array.isArray(data.bookmarks)) {
         throw new Error("Invalid bookmark data format");
       }
@@ -272,7 +275,7 @@ export class BookmarkManager {
 
       this.bookmarks = [...this.bookmarks, ...newBookmarks];
       this.saveBookmarks();
-      
+
       console.log(`📥 Imported ${newBookmarks.length} new bookmarks`);
       return true;
     } catch (error) {
@@ -291,7 +294,7 @@ export class BookmarkManager {
     if (typeof timestamp === "number" && !isNaN(timestamp) && timestamp > 0) {
       return timestamp;
     }
-    
+
     // Try to parse string or Date
     if (timestamp) {
       const parsed = new Date(timestamp).getTime();
@@ -299,7 +302,7 @@ export class BookmarkManager {
         return parsed;
       }
     }
-    
+
     // Default to current time if invalid
     return Date.now();
   }
@@ -377,4 +380,3 @@ export class BookmarkManager {
     return sorted;
   }
 }
-
