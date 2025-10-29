@@ -18,6 +18,7 @@ export const useCanvasInteraction = ({
   domRefs,
   onSystemSelect,
   onPlanetSelect,
+  onStarSelect,
   onGalacticCenterClick,
 }) => {
   // Interaction state
@@ -50,6 +51,22 @@ export const useCanvasInteraction = ({
         mouseRef.current,
         sceneManagerRef.current.camera
       );
+
+      // Check for star hover first
+      const centralStar = systemRendererRef.current.centralStar;
+      if (centralStar) {
+        const starIntersects = raycasterRef.current.intersectObjects(
+          [centralStar],
+          true
+        );
+        if (starIntersects.length > 0) {
+          domRefs.canvasRef.current.classList.add("pointer");
+          domRefs.canvasRef.current.classList.remove("grab");
+          return;
+        }
+      }
+
+      // Then check for planet hover
       const planetMeshes = systemRendererRef.current.getAllPlanetMeshes();
       const intersects = raycasterRef.current.intersectObjects(
         planetMeshes,
@@ -184,6 +201,36 @@ export const useCanvasInteraction = ({
         hideTooltip();
       }
     } else if (viewModeRef.current === "system" && currentSystemRef.current) {
+      // Check for star click first (higher priority)
+      const centralStar = systemRendererRef.current.centralStar;
+      if (centralStar) {
+        const starIntersects = raycasterRef.current.intersectObjects(
+          [centralStar],
+          true
+        );
+
+        if (starIntersects.length > 0) {
+          // Clicked on the central star
+          let clickedMesh = starIntersects[0].object;
+
+          // Traverse up to find the star group with userData
+          while (clickedMesh.parent && !clickedMesh.userData.isStar) {
+            clickedMesh = clickedMesh.parent;
+          }
+
+          if (clickedMesh.userData.isStar && onStarSelect) {
+            hideTooltip();
+
+            const starWorldPosition = new THREE.Vector3();
+            clickedMesh.getWorldPosition(starWorldPosition);
+
+            onStarSelect(currentSystemRef.current, starWorldPosition, clickedMesh);
+            return; // Don't check planets if star was clicked
+          }
+        }
+      }
+
+      // If no star was clicked, check for planet clicks
       const planetMeshes = systemRendererRef.current.getAllPlanetMeshes();
       const intersects = raycasterRef.current.intersectObjects(
         planetMeshes,
