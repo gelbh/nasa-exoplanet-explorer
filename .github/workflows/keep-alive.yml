@@ -12,38 +12,140 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-      - name: Ping Backend Health Endpoint
+      - name: Validate Backend URL Secret
+        run: |
+          if [ -z "${{ secrets.BACKEND_URL }}" ]; then
+            echo "❌ Error: BACKEND_URL secret is not set in GitHub repository settings"
+            echo "Please set BACKEND_URL secret under Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          echo "✅ BACKEND_URL secret is configured"
+          echo "📍 Backend URL: ${{ secrets.BACKEND_URL }}"
+
+      - name: Ping Backend Keep-Alive Endpoint
+        id: ping
         run: |
           echo "========================================="
           echo "🏓 Pinging backend at $(date)"
           echo "========================================="
 
-          # Ping the backend health endpoint
-          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.BACKEND_URL }}/api/health)
+          BACKEND_URL="${{ secrets.BACKEND_URL }}"
+          ENDPOINT="${BACKEND_URL}/api/ping"
+          MAX_RETRIES=3
+          RETRY_DELAY=1
+          SUCCESS=false
 
-          echo "📡 Response code: $response"
-
-          # Check if response is successful
-          if [ $response -eq 200 ]; then
-            echo "✅ Backend is alive and responding!"
+          # Function to ping with retry logic and exponential backoff
+          ping_with_retry() {
+            local attempt=1
+            local delay=$RETRY_DELAY
             
-            # Get full response for verification
-            full_response=$(curl -s ${{ secrets.BACKEND_URL }}/api/health)
-            echo "📄 Response body: $full_response"
+            while [ $attempt -le $MAX_RETRIES ]; do
+              echo ""
+              echo "Attempt $attempt of $MAX_RETRIES..."
+              
+              # Create temp file for response body
+              temp_file=$(mktemp)
+              
+              # Make request with timeout and capture response code, time, and body in one call
+              # curl writes: body to file, then status code and time to stdout
+              curl_output=$(curl -s -w "\n%{http_code}\n%{time_total}" \
+                --max-time 10 \
+                --silent \
+                --show-error \
+                -o "$temp_file" \
+                "${ENDPOINT}" 2>&1)
+              
+              curl_exit_code=$?
+              
+              # Extract components from curl output
+              # Last line is response time, second to last is HTTP code
+              response_time=$(echo "$curl_output" | tail -n 1)
+              http_code=$(echo "$curl_output" | tail -n 2 | head -n 1)
+              
+              # Get response body
+              if [ -f "$temp_file" ]; then
+                response_body=$(cat "$temp_file" 2>/dev/null || echo "")
+                rm -f "$temp_file"
+              else
+                response_body=""
+              fi
+              
+              # If curl failed completely, set error code
+              if [ $curl_exit_code -ne 0 ] && [ -z "$http_code" ]; then
+                http_code="000"
+              fi
+              
+              # Check if we got a successful response
+              if [ "$http_code" = "200" ]; then
+                echo "✅ Backend responded successfully!"
+                echo "📡 HTTP Status: $http_code"
+                echo "⏱️  Response Time: ${response_time}s"
+                if [ -n "$response_body" ]; then
+                  echo "📄 Response: $response_body"
+                fi
+                
+                # Output response time for summary
+                echo "response_time=${response_time}" >> $GITHUB_OUTPUT
+                SUCCESS=true
+                return 0
+              else
+                echo "⚠️  Attempt $attempt failed"
+                echo "📡 HTTP Status: ${http_code:-'Connection failed'}"
+                if [ -n "$response_body" ] && [ "$response_body" != "null" ]; then
+                  echo "📄 Response: $response_body"
+                fi
+                
+                if [ $attempt -lt $MAX_RETRIES ]; then
+                  echo "⏳ Waiting ${delay}s before retry..."
+                  sleep $delay
+                  delay=$((delay * 2)) # Exponential backoff: 1s, 2s, 4s
+                fi
+              fi
+              
+              attempt=$((attempt + 1))
+            done
+            
+            return 1
+          }
+
+          # Execute ping with retries
+          if ping_with_retry; then
+            echo ""
+            echo "========================================="
+            echo "✅ Keep-alive ping completed successfully"
+            echo "========================================="
           else
-            echo "❌ Backend returned unexpected status code: $response"
-            echo "⚠️  This might indicate the backend is down or experiencing issues"
+            echo ""
+            echo "========================================="
+            echo "❌ Keep-alive ping failed after $MAX_RETRIES attempts"
+            echo "⚠️  Backend may be down or unreachable"
+            echo "========================================="
             exit 1
           fi
-
-          echo "========================================="
-          echo "✅ Keep-alive ping completed successfully"
-          echo "========================================="
 
       - name: Summary
         if: success()
         run: |
-          echo "Backend is healthy and will not spin down"
-          echo "Next ping in 10 minutes"
+          echo "✅ Backend Status: Healthy"
+          echo "🏓 Keep-alive ping successful"
+          echo "⏱️  Response Time: ${{ steps.ping.outputs.response_time }}s"
+          echo "🕐 Next ping scheduled in 10 minutes"
+          echo ""
+          echo "The backend will remain active on Render free tier."
+
+      - name: Failure Notification
+        if: failure()
+        run: |
+          echo "❌ Keep-alive ping failed"
+          echo "⚠️  The backend may have spun down or is experiencing issues"
+          echo ""
+          echo "Possible causes:"
+          echo "  - Render service has spun down (free tier)"
+          echo "  - Network connectivity issues"
+          echo "  - Backend server error"
+          echo ""
+          echo "Next scheduled ping will attempt to wake up the service."
