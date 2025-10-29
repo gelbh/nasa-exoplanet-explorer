@@ -150,8 +150,22 @@ export class SceneManager {
     canvas.addEventListener(
       "webglcontextrestored",
       () => {
+        console.log("WebGL context restored");
+        
+        // Test if context restoration succeeded
+        const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        if (!gl) {
+          console.error("Failed to restore WebGL context");
+          // Notify user that page reload is needed
+          alert("WebGL context could not be restored. Please reload the page.");
+          return;
+        }
+        
         // Reinitialize the scene
+        // Note: This creates a new scene - view state will be lost
+        // TODO: Implement state preservation for better UX
         this.initialize();
+        console.log("Scene reinitialized after context restoration");
       },
       false
     );
