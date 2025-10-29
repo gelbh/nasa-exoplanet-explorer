@@ -13,6 +13,49 @@ export class BookmarkManager {
     if (!this.storageAvailable) {
       console.warn("⚠️ localStorage is not available. Bookmarks will not persist across sessions.");
     }
+    
+    // Listen for storage events from other tabs
+    this.setupStorageSync();
+  }
+  
+  /**
+   * Setup multi-tab synchronization via storage events
+   */
+  setupStorageSync() {
+    if (typeof window === "undefined") return;
+    
+    this.handleStorageChange = (event) => {
+      // Only sync if the change is to our storage key and from another tab
+      if (event.key === this.storageKey && event.newValue !== null) {
+        try {
+          const newBookmarks = JSON.parse(event.newValue);
+          if (Array.isArray(newBookmarks)) {
+            this.bookmarks = newBookmarks;
+            console.log("📚 Bookmarks synced from another tab");
+            this.notifyListeners();
+          }
+        } catch (error) {
+          console.error("Failed to sync bookmarks from other tab:", error);
+        }
+      }
+      // Handle bookmark clear from another tab
+      else if (event.key === this.storageKey && event.newValue === null) {
+        this.bookmarks = [];
+        console.log("🗑️ Bookmarks cleared in another tab");
+        this.notifyListeners();
+      }
+    };
+    
+    window.addEventListener("storage", this.handleStorageChange);
+  }
+  
+  /**
+   * Cleanup storage event listener
+   */
+  destroy() {
+    if (typeof window !== "undefined" && this.handleStorageChange) {
+      window.removeEventListener("storage", this.handleStorageChange);
+    }
   }
 
   /**
