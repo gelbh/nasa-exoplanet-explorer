@@ -2,6 +2,8 @@
 // TABLE STYLING
 // ============================================
 
+@use '../abstracts' as *;
+
 .exoplanet-viewer-page {
   // Info panel tables
   .table {

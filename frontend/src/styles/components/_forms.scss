@@ -2,6 +2,8 @@
 // FORM CONTROLS, INPUTS, AND SELECTS
 // ============================================
 
+@use '../abstracts' as *;
+
 .exoplanet-panel-content {
   .form-label {
     font-size: 0.875rem;

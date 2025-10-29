@@ -2,6 +2,8 @@
 // BASE RESET & DEFAULTS
 // ============================================
 
+@use '../abstracts' as *;
+
 // Hero section (if needed for other pages)
 .exoplanet-viewer-hero {
   min-height: 60vh;

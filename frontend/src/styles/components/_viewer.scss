@@ -2,6 +2,8 @@
 // EXOPLANET VIEWER MAIN CONTAINER
 // ============================================
 
+@use '../abstracts' as *;
+
 .exoplanet-viewer-page {
   // Ensure full-height layout
   min-height: 100vh;

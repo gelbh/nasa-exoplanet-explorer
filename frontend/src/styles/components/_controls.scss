@@ -2,6 +2,8 @@
 // CONTROLS AND INSTRUCTIONS OVERLAYS
 // ============================================
 
+@use '../abstracts' as *;
+
 .exoplanet-controls-overlay {
   position: absolute;
   bottom: $spacing-xl;
