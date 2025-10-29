@@ -250,7 +250,12 @@ export class SceneManager {
 
     const time = Date.now() * 0.0003; // Slower twinkling for distant stars
     const sizes = this.starField.geometry.attributes.size.array;
-    const originalSizes = this.starField.geometry.attributes.size.array;
+    
+    // Store original sizes on first run to prevent accumulation
+    if (!this.starFieldOriginalSizes) {
+      this.starFieldOriginalSizes = new Float32Array(sizes);
+    }
+    const originalSizes = this.starFieldOriginalSizes;
 
     for (let i = 0; i < sizes.length; i++) {
       const twinkle = Math.abs(Math.sin(time + i * 0.5)) * 0.5 + 0.5;
