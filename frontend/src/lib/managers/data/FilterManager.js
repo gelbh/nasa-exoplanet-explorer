@@ -363,8 +363,11 @@ export class FilterManager {
     const notable = [];
 
     systems.forEach((planets, starName) => {
-      // Calculate average distance for the system (use first planet's distance)
-      const systemDistance = planets[0]?.distance || 0;
+      // Calculate average distance for the system
+      const distances = planets.map(p => p.distance).filter(d => d != null && d > 0);
+      const systemDistance = distances.length > 0
+        ? distances.reduce((sum, d) => sum + d, 0) / distances.length
+        : (planets[0]?.distance || 0);
 
       notable.push({
         starName: starName,
