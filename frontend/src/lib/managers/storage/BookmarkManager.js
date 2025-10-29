@@ -5,8 +5,30 @@
 export class BookmarkManager {
   constructor() {
     this.storageKey = "exoplanet_bookmarks";
+    this.storageAvailable = this.checkStorageAvailability();
     this.bookmarks = this.loadBookmarks();
     this.listeners = [];
+    
+    // Warn user if storage is not available
+    if (!this.storageAvailable) {
+      console.warn("⚠️ localStorage is not available. Bookmarks will not persist across sessions.");
+    }
+  }
+
+  /**
+   * Check if localStorage is available
+   * @returns {boolean}
+   */
+  checkStorageAvailability() {
+    try {
+      const testKey = "__storage_test__";
+      localStorage.setItem(testKey, "test");
+      localStorage.removeItem(testKey);
+      return true;
+    } catch (error) {
+      // localStorage may be disabled (private browsing, quota exceeded, etc.)
+      return false;
+    }
   }
 
   /**
@@ -31,11 +53,18 @@ export class BookmarkManager {
    * Save bookmarks to localStorage
    */
   saveBookmarks() {
+    if (!this.storageAvailable) {
+      console.warn("localStorage not available. Bookmarks cannot be saved.");
+      return false;
+    }
+    
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.bookmarks));
       this.notifyListeners();
+      return true;
     } catch (error) {
       console.error("Error saving bookmarks:", error);
+      return false;
     }
   }
 
