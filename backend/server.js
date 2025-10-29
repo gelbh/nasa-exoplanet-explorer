@@ -152,8 +152,25 @@ app.get("/api/exoplanets", limiter, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error("❌ Error fetching exoplanets:", error);
-    res.status(500).json({
-      error: "Failed to fetch exoplanet data",
+    
+    // Differentiate between network errors and other errors
+    let statusCode = 500;
+    let errorType = "Failed to fetch exoplanet data";
+    
+    // Network/upstream errors
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || 
+        error.code === 'ETIMEDOUT' || error.type === 'system') {
+      statusCode = 503; // Service Unavailable
+      errorType = "Upstream service unavailable";
+    }
+    // HTTP errors from NASA API
+    else if (error.message && error.message.includes('HTTP error')) {
+      statusCode = 502; // Bad Gateway
+      errorType = "Upstream service error";
+    }
+    
+    res.status(statusCode).json({
+      error: errorType,
       message: NODE_ENV === "production" ? "Internal server error" : error.message,
     });
   }
@@ -228,8 +245,30 @@ app.get("/api/planet/:name", limiter, async (req, res) => {
     res.json(data[0]);
   } catch (error) {
     console.error("❌ Error fetching planet details:", error);
-    res.status(500).json({
-      error: "Failed to fetch planet details",
+    
+    // Differentiate between network errors and other errors
+    let statusCode = 500;
+    let errorType = "Failed to fetch planet details";
+    
+    // Network/upstream errors
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || 
+        error.code === 'ETIMEDOUT' || error.type === 'system') {
+      statusCode = 503; // Service Unavailable
+      errorType = "Upstream service unavailable";
+    }
+    // HTTP errors from NASA API
+    else if (error.message && error.message.includes('NASA API error')) {
+      statusCode = 502; // Bad Gateway
+      errorType = "Upstream service error";
+    }
+    // Validation errors
+    else if (error.message && error.message.includes('Invalid planet name')) {
+      statusCode = 400; // Bad Request
+      errorType = "Invalid request";
+    }
+    
+    res.status(statusCode).json({
+      error: errorType,
       message: NODE_ENV === "production" ? "Internal server error" : error.message,
     });
   }
