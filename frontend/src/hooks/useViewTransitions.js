@@ -309,6 +309,8 @@ export const useViewTransitions = ({
   const selectSystem = (system) => {
     currentSystemRef.current = system;
 
+    const wasStarView = viewModeRef.current === "star";
+
     if (viewModeRef.current === "galaxy") {
       galaxyRendererRef.current.cleanup();
     }
@@ -325,6 +327,31 @@ export const useViewTransitions = ({
 
     if (currentPlanetRef.current) {
       cameraManagerRef.current.setFollowPlanet(true);
+    }
+
+    // If coming from star view, just show planets instead of re-rendering
+    if (wasStarView && currentSystemRef.current?.starName === system.starName) {
+      systemRendererRef.current.showAllPlanets();
+      
+      // Still need to get system info for camera positioning
+      const maxRadius = systemRendererRef.current.calculateMaxOrbitRadius(system.planets);
+      const scaleFactor = systemRendererRef.current.calculateScaleFactor(maxRadius);
+      const cameraDistance = Math.max(15, maxRadius * scaleFactor * 3.0);
+
+      sceneManagerRef.current.smoothCameraTransition(
+        new THREE.Vector3(0, cameraDistance * 0.4, cameraDistance * 0.9),
+        1500,
+        () => {
+          cameraManagerRef.current.updateLastCameraDistance(cameraDistance);
+          setTimeout(() => {
+            cameraManagerRef.current.setTransitioning(false);
+          }, 500);
+        }
+      );
+
+      updateInfoTab();
+      switchToInfoTab();
+      return;
     }
 
     const systemInfo = systemRendererRef.current.renderSystem(
