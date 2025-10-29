@@ -248,7 +248,7 @@ export class ApiManager {
 
     // Stellar properties
     const spectralType = raw.st_spectype || null; // e.g., "G2V", "M3V"
-    const stellarAge = raw.st_age || null; // Gyr (billion years)
+    const stellarAge = raw.st_age ? Math.max(0, raw.st_age) : null; // Gyr (billion years), non-negative
 
     // Gas giant measurements (validated)
     const massJupiter =
@@ -271,8 +271,8 @@ export class ApiManager {
       semiMajorAxis: semiMajorAxis,
       insolationFlux: insolationFlux,
       hostStar: raw.hostname || "Unknown",
-      distance: distance * 3.26156, // Convert parsecs to light-years
-      discoveryYear: raw.disc_year || "Unknown",
+      distance: distance * 3.26156, // Convert parsecs to light-years (1 parsec = 3.26156 light-years)
+      discoveryYear: raw.disc_year ? parseInt(raw.disc_year, 10) : null,
       stellarTemp: stellarTemp,
       stellarRadius: stellarRadius,
       stellarMass: stellarMass,
