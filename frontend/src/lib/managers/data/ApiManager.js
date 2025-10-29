@@ -84,8 +84,26 @@ export class ApiManager {
   /**
    * Fetch exoplanets from NASA API (via backend proxy) or load from cache
    * Processes data in batches for smoother UI experience
+   * Uses request deduplication to prevent redundant fetches
    */
   async fetchExoplanets(onBatchProcessed, onComplete, onError) {
+    // Request deduplication: if already fetching, queue callbacks and return
+    if (this.isProcessing && this.activeFetchPromise) {
+      console.log("🔄 Deduplicating fetch request - using active request");
+      // Wait for active fetch to complete, then call callbacks with existing data
+      try {
+        await this.activeFetchPromise;
+        if (onComplete && this.exoplanets.length > 0) {
+          onComplete(this.exoplanets);
+        }
+      } catch (error) {
+        if (onError) {
+          onError(error);
+        }
+      }
+      return;
+    }
+
     // Prevent race condition: check and set processing flag atomically
     if (this.isProcessing) {
       this.cancelProcessing();
@@ -93,6 +111,9 @@ export class ApiManager {
 
     // Mark as processing before any async operations
     this.isProcessing = true;
+    
+    // Create promise for request deduplication
+    this.activeFetchPromise = (async () => {
 
     try {
       let data;
@@ -134,7 +155,7 @@ export class ApiManager {
             break; // Success - exit retry loop
           } catch (error) {
             lastError = error;
-            
+
             // Don't retry on abort (timeout)
             if (error.name === "AbortError") {
               throw new Error(
@@ -145,15 +166,23 @@ export class ApiManager {
             // If this isn't the last attempt, wait before retrying
             if (attempt < maxRetries - 1) {
               const backoffDelay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5s
-              console.warn(`API fetch failed (attempt ${attempt + 1}/${maxRetries}). Retrying in ${backoffDelay}ms...`);
-              await new Promise(resolve => setTimeout(resolve, backoffDelay));
+              console.warn(
+                `API fetch failed (attempt ${
+                  attempt + 1
+                }/${maxRetries}). Retrying in ${backoffDelay}ms...`
+              );
+              await new Promise((resolve) => setTimeout(resolve, backoffDelay));
             }
           }
         }
 
         // If we exhausted all retries, throw the last error
         if (!data) {
-          throw new Error(`Failed to fetch data after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
+          throw new Error(
+            `Failed to fetch data after ${maxRetries} attempts: ${
+              lastError?.message || "Unknown error"
+            }`
+          );
         }
       }
 
@@ -223,7 +252,14 @@ export class ApiManager {
       if (onError) {
         onError(error);
       }
+    } finally {
+      // Clear active fetch promise for deduplication
+      this.activeFetchPromise = null;
     }
+    })(); // End of activeFetchPromise wrapper
+    
+    // Wait for the promise to complete
+    await this.activeFetchPromise;
   }
 
   /**
@@ -242,7 +278,10 @@ export class ApiManager {
       : null; // Null if not provided
     // Eccentricity: 0 = circular, <1 = elliptical, =1 = parabolic, >1 = hyperbolic
     // Allow up to 1.2 to accommodate measurement uncertainty while filtering clearly invalid data
-    const orbitalEccentricity = Math.max(0, Math.min(raw.pl_orbeccen || 0, 1.2));
+    const orbitalEccentricity = Math.max(
+      0,
+      Math.min(raw.pl_orbeccen || 0, 1.2)
+    );
     const semiMajorAxis =
       raw.pl_orbsmax && raw.pl_orbsmax > 0 ? raw.pl_orbsmax : null; // AU (positive)
     const insolationFlux =
