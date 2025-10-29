@@ -212,8 +212,20 @@ app.get("/api/health", (req, res) => {
 /**
  * POST /api/cache/clear
  * Clear the cache (useful for development/testing)
+ * Restricted to development environment or requires API key
  */
 app.post("/api/cache/clear", (req, res) => {
+  // Security: Only allow in development or with valid API key
+  const apiKey = req.headers["x-api-key"];
+  const validApiKey = process.env.ADMIN_API_KEY;
+
+  if (NODE_ENV !== "development" && apiKey !== validApiKey) {
+    return res.status(403).json({
+      error: "Forbidden",
+      message: "This endpoint requires authentication",
+    });
+  }
+
   const keysDeleted = cache.keys().length;
   cache.flushAll();
   console.log("🗑️ Cache cleared");
