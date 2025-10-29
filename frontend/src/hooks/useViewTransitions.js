@@ -102,13 +102,30 @@ export const useViewTransitions = ({
   // ============================================
 
   const transitionToStarFromSystem = (system, starWorldPosition, starMesh) => {
+    if (!starMesh) {
+      console.warn("Star mesh not provided for transition");
+      return;
+    }
+
     cameraManagerRef.current.setTransitioning(true);
 
-    // Get star radius from the mesh
-    const boundingBox = new THREE.Box3().setFromObject(starMesh);
-    const size = new THREE.Vector3();
-    boundingBox.getSize(size);
-    const actualStarRadius = Math.max(size.x, size.y, size.z) / 2;
+    // Get star radius from userData if available (more accurate than bounding box)
+    // Fallback to bounding box calculation if userData doesn't have starRadius
+    let actualStarRadius;
+    if (starMesh.userData && starMesh.userData.starRadius) {
+      actualStarRadius = starMesh.userData.starRadius;
+    } else {
+      // Fallback: Calculate from bounding box
+      const boundingBox = new THREE.Box3().setFromObject(starMesh);
+      const size = new THREE.Vector3();
+      boundingBox.getSize(size);
+      actualStarRadius = Math.max(size.x, size.y, size.z) / 2;
+
+      // If bounding box is suspiciously small, use a minimum size
+      if (actualStarRadius < 0.1) {
+        actualStarRadius = 0.5; // Default minimum star radius
+      }
+    }
 
     // Calculate distance for star view - stars are typically larger than planets
     // Use a more conservative multiplier for better viewing
@@ -121,10 +138,8 @@ export const useViewTransitions = ({
       );
 
     // Stars can be very large, so we want to pull back a bit more
-    const safeDistance = Math.max(
-      closeUpDistance * 1.5,
-      actualStarRadius * 5
-    );
+    // Use similar approach to planet view but with slightly more distance
+    const safeDistance = Math.max(closeUpDistance * 1.2, actualStarRadius * 4);
 
     sceneManagerRef.current.smoothCameraTransitionTrackingTarget(
       starMesh,
@@ -134,19 +149,23 @@ export const useViewTransitions = ({
         viewModeRef.current = "star";
         currentStarRef.current = {
           system: system,
-          starData: starMesh.userData.stellarData || system.planets[0], // Extract stellar data
+          starData: starMesh.userData?.stellarData || system.planets[0], // Extract stellar data
         };
 
         // Hide planets and orbit lines when viewing star
-        systemRendererRef.current.planetMeshes.forEach((mesh) => {
-          mesh.visible = false;
-        });
-        systemRendererRef.current.orbitLines.forEach((line) => {
-          line.visible = false;
-        });
+        if (systemRendererRef.current.planetMeshes) {
+          systemRendererRef.current.planetMeshes.forEach((mesh) => {
+            mesh.visible = false;
+          });
+        }
+        if (systemRendererRef.current.orbitLines) {
+          systemRendererRef.current.orbitLines.forEach((line) => {
+            line.visible = false;
+          });
+        }
 
         updateUIForStarView();
-        
+
         const currentDistance =
           sceneManagerRef.current.camera.position.length();
         cameraManagerRef.current.updateLastCameraDistance(currentDistance);
@@ -332,10 +351,13 @@ export const useViewTransitions = ({
     // If coming from star view, just show planets instead of re-rendering
     if (wasStarView && currentSystemRef.current?.starName === system.starName) {
       systemRendererRef.current.showAllPlanets();
-      
+
       // Still need to get system info for camera positioning
-      const maxRadius = systemRendererRef.current.calculateMaxOrbitRadius(system.planets);
-      const scaleFactor = systemRendererRef.current.calculateScaleFactor(maxRadius);
+      const maxRadius = systemRendererRef.current.calculateMaxOrbitRadius(
+        system.planets
+      );
+      const scaleFactor =
+        systemRendererRef.current.calculateScaleFactor(maxRadius);
       const cameraDistance = Math.max(15, maxRadius * scaleFactor * 3.0);
 
       sceneManagerRef.current.smoothCameraTransition(

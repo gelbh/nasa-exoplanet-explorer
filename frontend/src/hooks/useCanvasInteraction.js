@@ -213,18 +213,44 @@ export const useCanvasInteraction = ({
           // Clicked on the central star
           let clickedMesh = starIntersects[0].object;
 
-          // Traverse up to find the star group with userData
-          while (clickedMesh.parent && !clickedMesh.userData.isStar) {
-            clickedMesh = clickedMesh.parent;
+          // Since we intersected with centralStar, we know centralStar contains the star
+          // Traverse up to find the star group, or use centralStar directly
+          let starGroup = null;
+
+          // Check if clicked object itself is the star group
+          if (clickedMesh.userData?.isStar) {
+            starGroup = clickedMesh;
+          } else {
+            // Traverse up to find the star group with userData
+            let current = clickedMesh;
+            while (current && current.parent && current !== centralStar) {
+              if (current.userData?.isStar) {
+                starGroup = current;
+                break;
+              }
+              current = current.parent;
+            }
+
+            // If we didn't find it via traversal, use centralStar directly
+            // We know centralStar is the star group from SystemRenderer.addCentralStar()
+            // even if userData.isStar isn't set for some reason
+            if (!starGroup) {
+              starGroup = centralStar;
+            }
           }
 
-          if (clickedMesh.userData.isStar && onStarSelect) {
+          // Use the star group if we found it (we know we intersected with centralStar)
+          if (starGroup && onStarSelect) {
             hideTooltip();
 
             const starWorldPosition = new THREE.Vector3();
-            clickedMesh.getWorldPosition(starWorldPosition);
+            starGroup.getWorldPosition(starWorldPosition);
 
-            onStarSelect(currentSystemRef.current, starWorldPosition, clickedMesh);
+            onStarSelect(
+              currentSystemRef.current,
+              starWorldPosition,
+              starGroup
+            );
             return; // Don't check planets if star was clicked
           }
         }

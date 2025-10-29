@@ -512,7 +512,7 @@ const ExoplanetViewer = () => {
     // Initialize all managers
     initializeDataManagers();
     initializeUIManagers(domRefs.canvasRef, domRefs.infoContentRef);
-    
+
     // Capture ref for cleanup to prevent stale ref warning
     const searchCoordinatorForCleanup = searchCoordinatorRef;
 
