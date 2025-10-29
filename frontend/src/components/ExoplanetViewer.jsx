@@ -551,6 +551,11 @@ const ExoplanetViewer = () => {
       cleanupThreeJS();
       cleanupUIManagers();
       removeCanvasEventListeners();
+      
+      // Cleanup search coordinator to prevent memory leaks
+      if (searchCoordinatorRef.current) {
+        searchCoordinatorRef.current.cleanup();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
