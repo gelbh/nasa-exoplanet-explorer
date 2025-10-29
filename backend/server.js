@@ -60,8 +60,25 @@ const cache = new NodeCache({
   checkperiod: 600, // Check for expired keys every 10 minutes
 });
 
-// Security middleware
-app.use(helmet());
+// Security middleware with Content Security Policy
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'", "https://exoplanetarchive.ipac.caltech.edu"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Allow cross-origin requests from frontend
+  })
+);
 
 // Compression middleware
 app.use(compression());
