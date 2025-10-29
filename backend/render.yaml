@@ -9,4 +9,12 @@ services:
         value: production
       - key: PORT
         value: 5000
+      # Optional: Enable self-ping for additional keep-alive backup
+      # Set to "true" to enable internal pinging every 14 minutes
+      - key: ENABLE_SELF_PING
+        value: "true"
+      # Optional: Backend URL for self-ping (auto-detected if not set)
+      - key: BACKEND_URL
+        value: "https://nasa-exoplanet-explorer.onrender.com"
     healthCheckPath: /api/health
+    # Alternative keep-alive endpoint: /api/ping (lighter weight, faster response)
