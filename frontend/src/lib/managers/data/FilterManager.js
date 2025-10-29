@@ -21,6 +21,10 @@ export class FilterManager {
     const solarSystem = generateSolarSystemData();
     this.exoplanets = [...solarSystem, ...exoplanets];
     this.filteredExoplanets = [...this.exoplanets];
+    
+    // Invalidate search cache when data changes
+    this.unifiedSearchCache = null;
+    this.unifiedSearchCacheQuery = null;
   }
 
   /**
