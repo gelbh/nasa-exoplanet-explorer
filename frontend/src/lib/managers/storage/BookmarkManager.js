@@ -70,7 +70,7 @@ export class BookmarkManager {
       localStorage.setItem(testKey, "test");
       localStorage.removeItem(testKey);
       return true;
-    } catch (error) {
+    } catch (_error) {
       // localStorage may be disabled (private browsing, quota exceeded, etc.)
       return false;
     }

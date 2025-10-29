@@ -476,6 +476,9 @@ const ExoplanetViewer = () => {
     // Initialize all managers
     initializeDataManagers();
     initializeUIManagers(domRefs.canvasRef, domRefs.infoContentRef);
+    
+    // Capture ref for cleanup to prevent stale ref warning
+    const searchCoordinatorForCleanup = searchCoordinatorRef;
 
     // Set callbacks
     uiManagerRef.current.setPlanetSelectCallback((planet) =>
@@ -566,9 +569,8 @@ const ExoplanetViewer = () => {
       removeCanvasEventListeners();
 
       // Cleanup search coordinator to prevent memory leaks
-      const searchCoordinator = searchCoordinatorRef.current;
-      if (searchCoordinator) {
-        searchCoordinator.cleanup();
+      if (searchCoordinatorForCleanup.current) {
+        searchCoordinatorForCleanup.current.cleanup();
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
