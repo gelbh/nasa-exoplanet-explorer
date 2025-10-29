@@ -176,17 +176,28 @@ export class ExportManager {
    */
   async shareViaWebAPI(shareData) {
     if (!navigator.share) {
-      console.warn("Web Share API not supported");
+      console.info("Web Share API not supported on this browser. Use the URL copy button instead.");
+      return false;
+    }
+
+    // Check if share data is valid
+    if (!shareData || !shareData.url) {
+      console.error("Invalid share data: URL is required");
       return false;
     }
 
     try {
       await navigator.share(shareData);
+      console.log("✅ Shared successfully via Web Share API");
       return true;
     } catch (error) {
-      if (error.name !== "AbortError") {
-        console.error("Error sharing:", error);
+      // User cancelled the share - this is not an error
+      if (error.name === "AbortError") {
+        console.log("Share cancelled by user");
+        return false;
       }
+      // Actual error
+      console.error("Error sharing:", error);
       return false;
     }
   }
