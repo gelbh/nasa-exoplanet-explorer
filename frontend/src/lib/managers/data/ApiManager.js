@@ -86,10 +86,12 @@ export class ApiManager {
    * Processes data in batches for smoother UI experience
    */
   async fetchExoplanets(onBatchProcessed, onComplete, onError) {
-    // Cancel any existing processing before starting new fetch
-    this.cancelProcessing();
+    // Prevent race condition: check and set processing flag atomically
+    if (this.isProcessing) {
+      this.cancelProcessing();
+    }
 
-    // Mark as processing
+    // Mark as processing before any async operations
     this.isProcessing = true;
 
     try {
