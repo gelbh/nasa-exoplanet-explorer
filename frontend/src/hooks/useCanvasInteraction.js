@@ -122,7 +122,8 @@ export const useCanvasInteraction = ({
     if (isDraggingRef.current) return;
 
     const clickDuration = Date.now() - clickStartTimeRef.current;
-    if (clickDuration < 100) {
+    // Reduced threshold from 100ms to 50ms to allow quicker clicks
+    if (clickDuration < 50) {
       return;
     }
 
