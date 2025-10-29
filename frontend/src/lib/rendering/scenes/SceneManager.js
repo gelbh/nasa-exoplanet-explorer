@@ -543,16 +543,25 @@ export class SceneManager {
   calculateOptimalCameraDistance(
     objectRadius,
     showOrbit = false,
-    orbitRadius = null
+    orbitRadius = null,
+    maxDistance = 25  // Default to 25 for backward compatibility, null = no limit
   ) {
     const fov = this.camera.fov * (Math.PI / 180);
-    let distance = Math.abs((objectRadius * 2.5) / Math.tan(fov / 2));
+    
+    // Use different multipliers based on context
+    const multiplier = showOrbit ? 2.5 : 3.5; // Larger multiplier for direct object viewing
+    let distance = Math.abs((objectRadius * multiplier) / Math.tan(fov / 2));
 
     if (showOrbit && orbitRadius) {
       distance = Math.abs((orbitRadius * 2.5) / Math.tan(fov / 2));
     }
 
-    return Math.max(2.5, Math.min(25, distance));
+    // Apply clamping only if maxDistance is specified
+    if (maxDistance !== null) {
+      return Math.max(2.5, Math.min(maxDistance, distance));
+    }
+    
+    return Math.max(2.5, distance);
   }
 
   /**
