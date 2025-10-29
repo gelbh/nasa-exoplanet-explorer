@@ -162,79 +162,43 @@ The application follows a modular architecture with clear separation of concerns
 - Node.js (v18 or higher)
 - npm or yarn
 
-### Backend Setup
+### Quick Start
 
-1. Navigate to the backend directory:
-
-```bash
-cd backend
-```
-
-2. Install dependencies:
+1. Install all dependencies (backend and frontend):
 
 ```bash
-npm install
+npm run install-all
 ```
 
-3. Create a `.env` file (optional - defaults work fine):
-
-```bash
-cp .env.example .env
-```
-
-4. Start the server:
-
-```bash
-npm run dev    # Development mode with auto-reload
-# or
-npm start      # Production mode
-```
-
-The backend server will run on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-
-```bash
-cd frontend
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Create a `.env` file (optional):
-
-```bash
-cp .env.example .env
-```
-
-4. Start the development server:
+2. Start both backend and frontend servers:
 
 ```bash
 npm run dev
 ```
 
-The frontend will run on `http://localhost:5173`
-
-### Running the Complete Application
-
-1. **Terminal 1** - Start backend:
-
-```bash
-cd backend && npm run dev
-```
-
-2. **Terminal 2** - Start frontend:
-
-```bash
-cd frontend && npm run dev
-```
+This will start:
+- Backend server on `http://localhost:5000`
+- Frontend server on `http://localhost:5173`
 
 3. Open your browser to `http://localhost:5173`
+
+### Individual Setup (Optional)
+
+If you prefer to run backend and frontend separately:
+
+**Backend:**
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ## Usage
 
