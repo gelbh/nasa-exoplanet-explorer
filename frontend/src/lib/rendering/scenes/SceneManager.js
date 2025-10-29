@@ -23,6 +23,7 @@ export class SceneManager {
     this.animationId = null;
     this.starAnimationFrameCount = 0; // Counter for throttling star updates
     this.isMobileDevice = this.detectMobileDevice(); // Detect mobile for performance optimization
+    this.cameraTransitionId = null; // Track ongoing camera transitions
   }
 
   /**
@@ -367,12 +368,25 @@ export class SceneManager {
   smoothCameraTransition(targetPosition, duration = 1200, onComplete = null) {
     if (!this.camera || !this.controls) return;
 
+    // Cancel previous transition if one is running
+    if (this.cameraTransitionId !== null) {
+      cancelAnimationFrame(this.cameraTransitionId);
+      this.cameraTransitionId = null;
+    }
+
     const startPosition = this.camera.position.clone();
     const startTarget = this.controls.target.clone();
     const targetControlsTarget = new THREE.Vector3(0, 0, 0); // Always look at origin
     const startTime = Date.now();
+    const transitionId = Symbol('transition');
+    this.cameraTransitionId = transitionId;
 
     const animateCamera = () => {
+      // Check if this transition was cancelled
+      if (this.cameraTransitionId !== transitionId) {
+        return;
+      }
+
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
@@ -389,9 +403,16 @@ export class SceneManager {
       this.controls.update();
 
       if (progress < 1) {
-        requestAnimationFrame(animateCamera);
-      } else if (onComplete) {
-        onComplete();
+        const rafId = requestAnimationFrame(animateCamera);
+        // Store RAF ID for potential cancellation (stored as number)
+        if (this.cameraTransitionId === transitionId) {
+          this.cameraTransitionId = rafId;
+        }
+      } else {
+        this.cameraTransitionId = null;
+        if (onComplete) {
+          onComplete();
+        }
       }
     };
 
