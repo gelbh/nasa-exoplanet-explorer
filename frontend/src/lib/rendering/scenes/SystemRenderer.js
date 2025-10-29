@@ -660,8 +660,10 @@ export class SystemRenderer {
       const baseOrbitTime = 60.0; // seconds for one complete orbit at speed 1.0
       const angularVelocity = ((2 * Math.PI) / baseOrbitTime) * speedMultiplier;
 
-      // Update angle
+      // Update angle and normalize to prevent float accumulation over long sessions
       planetMesh.userData.currentAngle += angularVelocity * deltaTime;
+      // Keep angle in 0-2π range to prevent floating point drift
+      planetMesh.userData.currentAngle = planetMesh.userData.currentAngle % (2 * Math.PI);
 
       // Get orbital parameters (only use if enabled)
       const inclination = useInclination ? planet.orbitalInclination || 0 : 0;
