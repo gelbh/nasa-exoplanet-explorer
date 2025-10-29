@@ -129,6 +129,18 @@ const limiter = rateLimit({
 const NASA_API_BASE = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync";
 
 /**
+ * GET /api/ping
+ * Ultra-lightweight keep-alive endpoint
+ * Optimized for frequent pings, not rate limited
+ */
+app.get("/api/ping", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
  * GET /api/exoplanets
  * Fetches exoplanet data from NASA Exoplanet Archive
  * Proxies the request to avoid CORS issues on the frontend
@@ -367,7 +379,49 @@ app.post("/api/cache/clear", (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 NASA Exoplanet Explorer API running on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🏓 Keep-alive ping: http://localhost:${PORT}/api/ping`);
+
+  // Optional self-ping mechanism for additional keep-alive backup
+  // Only enabled if ENABLE_SELF_PING environment variable is set
+  if (process.env.ENABLE_SELF_PING === "true") {
+    const SELF_PING_INTERVAL = 14 * 60 * 1000; // 14 minutes (less than 15 min Render timeout)
+    const baseUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+
+    console.log(
+      `🔄 Self-ping enabled: Will ping ${baseUrl}/api/ping every 14 minutes`
+    );
+
+    const selfPing = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/ping`, {
+          method: "GET",
+          headers: { "User-Agent": "Backend-Self-Ping/1.0" },
+        });
+
+        if (response.ok) {
+          console.log(`✅ Self-ping successful at ${new Date().toISOString()}`);
+        } else {
+          console.warn(
+            `⚠️ Self-ping returned status ${
+              response.status
+            } at ${new Date().toISOString()}`
+          );
+        }
+      } catch (error) {
+        console.error(
+          `❌ Self-ping failed at ${new Date().toISOString()}:`,
+          error.message
+        );
+      }
+    };
+
+    // Start self-ping after initial delay, then repeat
+    setTimeout(() => {
+      selfPing();
+      setInterval(selfPing, SELF_PING_INTERVAL);
+    }, 60000); // Wait 1 minute after server start
+  }
 });
