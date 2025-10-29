@@ -218,7 +218,9 @@ export class ApiManager {
     const density = raw.pl_dens
       ? Math.max(0.01, Math.min(raw.pl_dens, 50)) // 0.01-50 g/cm³
       : null; // Null if not provided
-    const orbitalEccentricity = Math.max(0, Math.min(raw.pl_orbeccen || 0, 1)); // 0-1 (valid range)
+    // Eccentricity: 0 = circular, <1 = elliptical, =1 = parabolic, >1 = hyperbolic
+    // Allow up to 1.2 to accommodate measurement uncertainty while filtering clearly invalid data
+    const orbitalEccentricity = Math.max(0, Math.min(raw.pl_orbeccen || 0, 1.2));
     const semiMajorAxis =
       raw.pl_orbsmax && raw.pl_orbsmax > 0 ? raw.pl_orbsmax : null; // AU (positive)
     const insolationFlux =
