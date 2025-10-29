@@ -674,6 +674,32 @@ const ExoplanetViewer = () => {
     console.log("✨ Comparison view setup complete!");
   };
 
+  // Offline detection
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("🌐 Connection restored");
+      // Optionally show a toast notification
+    };
+
+    const handleOffline = () => {
+      console.warn("⚠️ Connection lost - app running in offline mode");
+      alert("You are currently offline. Some features may not be available.");
+    };
+
+    // Check initial state
+    if (!navigator.onLine) {
+      console.warn("⚠️ Starting in offline mode");
+    }
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   // ============================================
   // RENDER
   // ============================================
