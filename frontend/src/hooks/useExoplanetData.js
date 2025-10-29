@@ -51,12 +51,15 @@ export const useExoplanetData = (apiEndpoint, uiRefs) => {
         if (loadCountElement) {
           loadCountElement.textContent = `${allExoplanets.length.toLocaleString()} planets loaded`;
 
-          // Update progress bar (assume 5000 total planets)
+          // Update progress bar (adaptive estimate based on current NASA archive size)
+          // As of 2025, NASA has ~5600+ confirmed exoplanets and growing
+          // Use 6000 as estimate to accommodate growth
           const progressBar = document.querySelector(
             ".exoplanet-loading-bar-fill"
           );
           if (progressBar) {
-            const progress = Math.min((allExoplanets.length / 5000) * 100, 100);
+            const estimatedTotal = 6000;
+            const progress = Math.min((allExoplanets.length / estimatedTotal) * 100, 100);
             progressBar.style.width = `${progress}%`;
           }
         }
