@@ -35,6 +35,14 @@ export class CameraManager {
    * Set callbacks for view transitions
    */
   setCallbacks({ onSwitchToSystemView, onSwitchToGalaxyView }) {
+    if (onSwitchToSystemView && typeof onSwitchToSystemView !== "function") {
+      console.error("CameraManager.setCallbacks: onSwitchToSystemView must be a function");
+      return;
+    }
+    if (onSwitchToGalaxyView && typeof onSwitchToGalaxyView !== "function") {
+      console.error("CameraManager.setCallbacks: onSwitchToGalaxyView must be a function");
+      return;
+    }
     this.onSwitchToSystemView = onSwitchToSystemView;
     this.onSwitchToGalaxyView = onSwitchToGalaxyView;
   }
