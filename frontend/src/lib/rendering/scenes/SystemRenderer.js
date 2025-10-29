@@ -590,12 +590,30 @@ export class SystemRenderer {
     });
 
     this.centralStar = new THREE.Mesh(starGeometry, starMaterial);
+    this.centralStar.position.set(0, 0, 0);
+    this.scene.add(this.centralStar);
+
+    // Store reference to ensure we can verify the star still exists when texture loads
+    const sunMesh = this.centralStar;
 
     // Load realistic Sun texture from local assets
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(
       "/textures/planets/sun.jpg",
       (texture) => {
+        // Verify the sun mesh still exists and hasn't been cleaned up
+        if (!sunMesh || !sunMesh.parent || sunMesh.material !== starMaterial) {
+          console.warn("Sun mesh was cleaned up before texture loaded");
+          texture.dispose();
+          return;
+        }
+
+        // Configure texture properties
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.flipY = false;
+
+        // Apply texture to material
         starMaterial.map = texture;
         starMaterial.color.setHex(0xffffff); // Set to white so texture shows true colors
         starMaterial.needsUpdate = true;
@@ -607,9 +625,6 @@ export class SystemRenderer {
         );
       }
     );
-
-    this.centralStar.position.set(0, 0, 0);
-    this.scene.add(this.centralStar);
 
     // Update lighting with Sun-specific values
     this.updateLighting(stellarData);
