@@ -226,7 +226,7 @@ const ExoplanetViewer = () => {
     );
   };
 
-  const { setupCanvasEventListeners, removeCanvasEventListeners } =
+  const { setupCanvasEventListeners, removeCanvasEventListeners, updateCanvasCursor, updateGalaxyCursor } =
     useCanvasInteraction({
       sceneManagerRef,
       raycasterRef,
@@ -575,6 +575,21 @@ const ExoplanetViewer = () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Update cursor when view mode changes
+  useEffect(() => {
+    if (viewMode === "galaxy") {
+      updateGalaxyCursor();
+    } else if (viewMode === "system") {
+      updateCanvasCursor();
+    } else {
+      // Planet view - set to grab cursor
+      if (domRefs.canvasRef.current) {
+        domRefs.canvasRef.current.classList.remove("pointer");
+        domRefs.canvasRef.current.classList.add("grab");
+      }
+    }
+  }, [viewMode, updateCanvasCursor, updateGalaxyCursor, domRefs.canvasRef]);
 
   // ============================================
   // HANDLERS FOR NEW FEATURES
