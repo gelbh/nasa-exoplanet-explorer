@@ -45,79 +45,23 @@ An interactive 3D visualization tool for exploring confirmed exoplanets from NAS
 
 ```
 nasa-exoplanet-explorer/
-├── backend/
-│   ├── server.js                    # Express server with NASA API proxy
-│   ├── package.json
-│   └── package-lock.json
-├── frontend/
+├── backend/                         # Express API server
+│   └── server.js                    # NASA API proxy endpoint
+├── frontend/                        # React + Three.js application
 │   ├── src/
-│   │   ├── components/              # React components
-│   │   │   ├── ExoplanetViewer.jsx  # Main 3D viewer component
-│   │   │   ├── SearchPanel.jsx      # Search and filter UI
-│   │   │   ├── InfoPanel.jsx        # Planet information display
-│   │   │   ├── CombinedPanel.jsx    # Combined search/info panel
-│   │   │   ├── CanvasContainer.jsx  # Three.js canvas wrapper
-│   │   │   ├── CanvasControls.jsx   # Canvas control buttons
-│   │   │   ├── SettingsPanel.jsx    # Settings UI
-│   │   │   └── InstructionsOverlay.jsx # Help overlay
+│   │   ├── components/              # React UI components
 │   │   ├── hooks/                   # Custom React hooks
-│   │   │   ├── useThreeJSScene.js   # Three.js scene management
-│   │   │   ├── useExoplanetData.js  # Data fetching and state
-│   │   │   ├── useDOMRefs.js        # DOM references
-│   │   │   ├── useUIManagers.js     # UI manager instances
-│   │   │   ├── useCanvasInteraction.js # Canvas interactions
-│   │   │   ├── useSettingsHandlers.js  # Settings logic
-│   │   │   ├── useViewTransitions.js   # View state transitions
-│   │   │   └── useInfoTab.js        # Info panel tab logic
-│   │   ├── lib/                     # Core libraries and utilities
+│   │   ├── lib/                     # Core libraries
 │   │   │   ├── managers/            # State and interaction managers
-│   │   │   │   ├── data/            # Data management
-│   │   │   │   │   ├── ApiManager.js
-│   │   │   │   │   ├── FilterManager.js
-│   │   │   │   │   └── SolarSystemData.js
-│   │   │   │   ├── interactions/    # User interactions
-│   │   │   │   │   ├── CameraManager.js
-│   │   │   │   │   └── SearchCoordinator.js
-│   │   │   │   ├── settings/        # Application settings
-│   │   │   │   │   └── SettingsManager.js
-│   │   │   │   └── ui/              # UI state management
-│   │   │   │       ├── UIManager.js
-│   │   │   │       ├── InfoTabManager.js
-│   │   │   │       ├── PanelManager.js
-│   │   │   │       └── TooltipManager.js
-│   │   │   ├── rendering/           # Three.js rendering modules
-│   │   │   │   ├── planets/         # Planet rendering
-│   │   │   │   │   ├── PlanetRenderer.js
-│   │   │   │   │   ├── PlanetMaterialGenerator.js
-│   │   │   │   │   ├── PlanetAtmosphereRenderer.js
-│   │   │   │   │   ├── PlanetRingRenderer.js
-│   │   │   │   │   └── TextureGenerator.js
-│   │   │   │   ├── stars/           # Star rendering
-│   │   │   │   │   └── StarRenderer.js
-│   │   │   │   ├── scenes/          # Scene management
-│   │   │   │   │   ├── SceneManager.js
-│   │   │   │   │   ├── GalaxyRenderer.js
-│   │   │   │   │   ├── SystemRenderer.js
-│   │   │   │   │   └── OrbitalMechanics.js
-│   │   │   │   └── shaders/         # GLSL shaders
-│   │   │   │       └── index.js
+│   │   │   ├── rendering/           # Three.js rendering (planets, stars, scenes)
 │   │   │   ├── physics/             # Physics calculations
-│   │   │   │   └── index.js
 │   │   │   └── utils/               # Utility functions
-│   │   │       ├── constants.js
-│   │   │       └── helpers.js
 │   │   ├── styles/                  # CSS/SCSS styling
-│   │   │   ├── App.css
-│   │   │   └── ExoplanetViewer.scss
 │   │   ├── utils/                   # Frontend utilities
-│   │   │   └── constants.js
 │   │   ├── App.jsx                  # Main app component
 │   │   └── main.jsx                 # Entry point
-│   ├── public/                      # Static assets
-│   │   └── textures/                # Planet and galaxy textures
-│   ├── package.json
-│   ├── vite.config.js
-│   └── index.html
+│   ├── public/                      # Static assets (textures, etc.)
+│   └── index.html                   # HTML template
 └── README.md
 ```
 
