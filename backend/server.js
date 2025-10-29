@@ -114,7 +114,7 @@ app.get("/api/exoplanets", limiter, async (req, res) => {
     console.error("❌ Error fetching exoplanets:", error);
     res.status(500).json({
       error: "Failed to fetch exoplanet data",
-      message: error.message,
+      message: NODE_ENV === "production" ? "Internal server error" : error.message,
     });
   }
 });
@@ -190,7 +190,7 @@ app.get("/api/planet/:name", limiter, async (req, res) => {
     console.error("❌ Error fetching planet details:", error);
     res.status(500).json({
       error: "Failed to fetch planet details",
-      message: error.message,
+      message: NODE_ENV === "production" ? "Internal server error" : error.message,
     });
   }
 });
