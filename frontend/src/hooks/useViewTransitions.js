@@ -47,7 +47,7 @@ export const useViewTransitions = ({
         actualPlanetRadius,
         false,
         null,
-        null  // No max distance clamp
+        null // No max distance clamp
       );
 
     // Improved safety distance that works better for small planets
@@ -98,12 +98,12 @@ export const useViewTransitions = ({
 
   const selectPlanet = (planet, systemData = null) => {
     currentPlanetRef.current = planet;
-    
+
     // Sync state immediately after ref update
     if (selectPlanet.syncState) {
       selectPlanet.syncState();
     }
-    
+
     cameraManagerRef.current.setTransitioning(true);
 
     if (!systemData && planet.hostStar) {
@@ -165,7 +165,7 @@ export const useViewTransitions = ({
         planetRadius,
         false,
         null,
-        null  // No max distance clamp
+        null // No max distance clamp
       );
 
     sceneManagerRef.current.smoothCameraTransition(
@@ -202,12 +202,12 @@ export const useViewTransitions = ({
     }
 
     viewModeRef.current = "system";
-    
+
     // Sync state immediately after ref update
     if (selectSystem.syncState) {
       selectSystem.syncState();
     }
-    
+
     updateUIForSystemView();
     cameraManagerRef.current.setTransitioning(true);
 
@@ -307,7 +307,7 @@ export const useViewTransitions = ({
   const switchToGalaxyView = () => {
     viewModeRef.current = "galaxy";
     const previousSystem = currentSystemRef.current;
-    
+
     // Sync state immediately after ref update
     if (switchToGalaxyView.syncState) {
       switchToGalaxyView.syncState();

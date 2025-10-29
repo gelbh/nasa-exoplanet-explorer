@@ -33,7 +33,12 @@ export class SettingsManager {
   /**
    * Set renderer references
    */
-  setRenderers({ sceneManager, planetRenderer, systemRenderer, galaxyRenderer }) {
+  setRenderers({
+    sceneManager,
+    planetRenderer,
+    systemRenderer,
+    galaxyRenderer,
+  }) {
     this.sceneManager = sceneManager;
     this.planetRenderer = planetRenderer;
     this.systemRenderer = systemRenderer;
@@ -212,12 +217,12 @@ export class SettingsManager {
    */
   reapplySystemSettings() {
     if (!this.systemRenderer) return;
-    
+
     // Reapply visual settings
     this.systemRenderer.toggleLabels(this.showPlanetLabels);
     this.systemRenderer.toggleOrbitLines(this.showOrbitLines);
     this.systemRenderer.toggleAtmospheres(this.showAtmospheres);
-    
+
     // Note: Orbital inclination and realistic distances are handled during renderSystem()
     // via parameters, so they don't need to be reapplied here
   }
@@ -272,25 +277,30 @@ export class SettingsManager {
   updateSettingsVisibility(viewMode) {
     const atmosphereSetting = document.getElementById("atmosphereSetting");
     const planetLabelsSetting = document.getElementById("planetLabelsSetting");
-    const orbitalMechanicsSection = document.getElementById("orbitalMechanicsSection");
+    const orbitalMechanicsSection = document.getElementById(
+      "orbitalMechanicsSection"
+    );
 
     switch (viewMode) {
       case "galaxy":
         if (atmosphereSetting) atmosphereSetting.style.display = "none";
         if (planetLabelsSetting) planetLabelsSetting.style.display = "none";
-        if (orbitalMechanicsSection) orbitalMechanicsSection.style.display = "none";
+        if (orbitalMechanicsSection)
+          orbitalMechanicsSection.style.display = "none";
         break;
 
       case "system":
         if (atmosphereSetting) atmosphereSetting.style.display = "block";
         if (planetLabelsSetting) planetLabelsSetting.style.display = "block";
-        if (orbitalMechanicsSection) orbitalMechanicsSection.style.display = "block";
+        if (orbitalMechanicsSection)
+          orbitalMechanicsSection.style.display = "block";
         break;
 
       case "planet":
         if (atmosphereSetting) atmosphereSetting.style.display = "block";
         if (planetLabelsSetting) planetLabelsSetting.style.display = "none";
-        if (orbitalMechanicsSection) orbitalMechanicsSection.style.display = "none";
+        if (orbitalMechanicsSection)
+          orbitalMechanicsSection.style.display = "none";
         break;
     }
   }

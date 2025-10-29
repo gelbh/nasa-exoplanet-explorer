@@ -100,6 +100,7 @@ export class StarRenderer {
     // Store data for animation
     starGroup.userData = {
       isStar: true,
+      clickable: true, // Enable clicking for star zoom feature
       stellarTemp,
       spectralType,
       luminosity,
@@ -107,6 +108,7 @@ export class StarRenderer {
       animate,
       rotationSpeed: this.calculateRotationSpeed(spectralType, starRadius),
       pulseSpeed: this.calculatePulseSpeed(spectralType),
+      stellarData, // Store full stellar data for info display
     };
 
     this.stars.push(starGroup);

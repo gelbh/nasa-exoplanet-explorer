@@ -39,23 +39,27 @@ export class OrbitalMechanics {
     // Validate and use semi-major axis if available (most accurate)
     if (planet.semiMajorAxis) {
       if (planet.semiMajorAxis < 0) {
-        console.warn(`Invalid negative semi-major axis for planet ${planet.name}: ${planet.semiMajorAxis}`);
+        console.warn(
+          `Invalid negative semi-major axis for planet ${planet.name}: ${planet.semiMajorAxis}`
+        );
       } else if (planet.semiMajorAxis > 0) {
         orbitRadius = planet.semiMajorAxis * scaleFactor;
       }
     }
-    
+
     // Fallback to orbital period (Kepler's third law approximation)
     if (!orbitRadius && planet.orbitalPeriod) {
       if (planet.orbitalPeriod < 0) {
-        console.warn(`Invalid negative orbital period for planet ${planet.name}: ${planet.orbitalPeriod}`);
+        console.warn(
+          `Invalid negative orbital period for planet ${planet.name}: ${planet.orbitalPeriod}`
+        );
       } else if (planet.orbitalPeriod > 0) {
         // R^3 ∝ T^2 (simplified, assuming solar-mass star)
         const au = Math.pow(planet.orbitalPeriod / 365.25, 2 / 3);
         orbitRadius = au * scaleFactor;
       }
     }
-    
+
     // Last resort: equal spacing
     if (!orbitRadius) {
       orbitRadius = (index + 1) * 3;
@@ -91,7 +95,11 @@ export class OrbitalMechanics {
     let maxRadius = 0;
 
     planets.forEach((planet) => {
-      if (planet.semiMajorAxis && planet.semiMajorAxis > 0 && planet.semiMajorAxis > maxRadius) {
+      if (
+        planet.semiMajorAxis &&
+        planet.semiMajorAxis > 0 &&
+        planet.semiMajorAxis > maxRadius
+      ) {
         maxRadius = planet.semiMajorAxis;
       }
     });
