@@ -301,9 +301,11 @@ export class ApiManager {
     if (density !== null && density !== undefined) {
       if (density > 3.5) {
         return radius < 1.5 ? "terrestrial" : "super-earth";
-      } else if (density >= 1.0 && density <= 2.5) {
-        return "neptune";
-      } else if (density < 1.5) {
+      } else if (density >= 1.0 && density < 3.5) {
+        // Density 1.0-3.5 g/cm³: gas giants (Neptune-like or Jupiter-like)
+        return density <= 2.0 ? "jupiter" : "neptune";
+      } else if (density < 1.0) {
+        // Very low density: gas giant (Jupiter-like)
         return "jupiter";
       }
     }
