@@ -329,23 +329,46 @@ export class GalaxyRenderer {
 
       this.galacticCenter = new THREE.Mesh(geometry, material);
       this.galacticCenter.position.set(0, 0, 0);
+      this.scene.add(this.galacticCenter);
+
+      // Store reference to ensure we can verify the galactic center still exists when texture loads
+      const galacticCenterMesh = this.galacticCenter;
 
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load(
         "/textures/planets/sun.jpg",
         (texture) => {
+          // Verify the galactic center still exists and hasn't been cleaned up
+          if (!galacticCenterMesh || !galacticCenterMesh.parent || galacticCenterMesh.material !== material) {
+            console.warn("Galactic center was cleaned up before texture loaded");
+            texture.dispose();
+            return;
+          }
+
+          // Configure texture properties BEFORE assigning to material
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.flipY = false;
+          texture.needsUpdate = true; // Mark texture for GPU upload
+
+          // Apply texture to material
           material.map = texture;
           material.needsUpdate = true;
+
+          // Force material update
+          galacticCenterMesh.material = material; // Reassign to ensure mesh uses updated material
+          
+          // Log for debugging
+          console.log("Galactic center sun texture loaded and applied successfully");
         },
         undefined,
         (_error) => {
           console.warn(
-            "Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/"
+            "Failed to load Sun texture, using solid color. Ensure sun.jpg exists in public/textures/planets/",
+            _error
           );
         }
       );
-
-      this.scene.add(this.galacticCenter);
     }
   }
 
@@ -730,8 +753,13 @@ export class GalaxyRenderer {
    * Cleanup only star systems (keep basic structure)
    */
   cleanupStarSystems() {
-    // Remove system meshes only
+    // Remove system meshes only (exclude galactic center which should persist)
     this.systemMeshes.forEach((mesh) => {
+      // Don't dispose of the galactic center - it's part of the basic structure
+      if (mesh === this.galacticCenter) {
+        return;
+      }
+      
       this.scene.remove(mesh);
       if (mesh.geometry) mesh.geometry.dispose();
       if (mesh.material) {
@@ -742,7 +770,9 @@ export class GalaxyRenderer {
         }
       }
     });
-    this.systemMeshes = [];
+    
+    // Remove all system meshes from array except galactic center
+    this.systemMeshes = this.systemMeshes.filter(mesh => mesh === this.galacticCenter);
     this.starSystems = [];
   }
 
