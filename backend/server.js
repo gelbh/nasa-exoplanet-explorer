@@ -10,13 +10,53 @@ import helmet from "helmet";
 
 dotenv.config();
 
+// Validate environment variables
+const validatePort = (port) => {
+  const parsed = parseInt(port);
+  if (isNaN(parsed) || parsed < 1 || parsed > 65535) {
+    throw new Error(`Invalid PORT value: ${port}. Must be a number between 1 and 65535.`);
+  }
+  return parsed;
+};
+
+const validateTTL = (ttl) => {
+  const parsed = parseInt(ttl);
+  if (isNaN(parsed) || parsed < 0) {
+    console.warn(`Invalid CACHE_TTL value: ${ttl}. Using default: 86400 seconds.`);
+    return 86400;
+  }
+  return parsed;
+};
+
+const validateCorsOrigin = (origin) => {
+  if (!origin) {
+    console.warn("CORS_ORIGIN not set. Using default: http://localhost:5173");
+    return "http://localhost:5173";
+  }
+  // Basic validation: check if it's a valid URL or wildcard
+  if (origin !== "*" && !origin.match(/^https?:\/\//)) {
+    console.warn(`Invalid CORS_ORIGIN: ${origin}. Must start with http:// or https://. Using default.`);
+    return "http://localhost:5173";
+  }
+  return origin;
+};
+
+const validateRateLimit = (value, defaultValue, name) => {
+  const parsed = parseInt(value);
+  if (isNaN(parsed) || parsed < 0) {
+    console.warn(`Invalid ${name} value: ${value}. Using default: ${defaultValue}`);
+    return defaultValue;
+  }
+  return parsed;
+};
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = validatePort(process.env.PORT || "5000");
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 // Initialize cache (TTL in seconds, default 24 hours)
 const cache = new NodeCache({
-  stdTTL: parseInt(process.env.CACHE_TTL) || 86400,
+  stdTTL: validateTTL(process.env.CACHE_TTL || "86400"),
   checkperiod: 600, // Check for expired keys every 10 minutes
 });
 
@@ -35,7 +75,7 @@ if (NODE_ENV === "development") {
 
 // CORS middleware
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  origin: validateCorsOrigin(process.env.CORS_ORIGIN),
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
@@ -45,8 +85,8 @@ app.use(express.json());
 
 // Rate limiting middleware
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // Limit each IP to 100 requests per windowMs
+  windowMs: validateRateLimit(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, "RATE_LIMIT_WINDOW_MS"),
+  max: validateRateLimit(process.env.RATE_LIMIT_MAX_REQUESTS, 100, "RATE_LIMIT_MAX_REQUESTS"),
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
