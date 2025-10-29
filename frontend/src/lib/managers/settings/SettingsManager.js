@@ -302,6 +302,14 @@ export class SettingsManager {
         if (orbitalMechanicsSection)
           orbitalMechanicsSection.style.display = "none";
         break;
+
+      case "star":
+        // Hide planet-specific settings when viewing a star
+        if (atmosphereSetting) atmosphereSetting.style.display = "none";
+        if (planetLabelsSetting) planetLabelsSetting.style.display = "none";
+        if (orbitalMechanicsSection)
+          orbitalMechanicsSection.style.display = "none";
+        break;
     }
   }
 }
