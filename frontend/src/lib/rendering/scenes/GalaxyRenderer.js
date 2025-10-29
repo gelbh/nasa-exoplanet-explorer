@@ -426,10 +426,12 @@ export class GalaxyRenderer {
     const earthScaledDist = Math.log10(earthDistanceFromGC + 1) * 15;
 
     if (ra === null || dec === null || ra === undefined || dec === undefined) {
-      console.warn("Missing RA/Dec for system:", system.name);
-      const theta = Math.random() * Math.PI * 2;
-      const height = (Math.random() - 0.5) * 4;
-      const radius = Math.random() * 10 + earthScaledDist - 5;
+      console.warn("Missing RA/Dec for system:", system.starName || system.name || "Unknown");
+      // Generate deterministic position based on system name to keep it consistent
+      const seed = system.starName ? system.starName.charCodeAt(0) : Math.random();
+      const theta = (seed % 360) * Math.PI / 180;
+      const height = (Math.sin(seed) * 0.5) * 4;
+      const radius = (Math.abs(Math.cos(seed)) * 10) + earthScaledDist - 5;
       return new THREE.Vector3(
         radius * Math.cos(theta),
         height,
