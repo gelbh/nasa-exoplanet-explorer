@@ -41,16 +41,20 @@ export const useViewTransitions = ({
     boundingBox.getSize(size);
     const actualPlanetRadius = Math.max(size.x, size.y, size.z) / 2;
 
+    // Calculate distance with no max clamp (pass null as maxDistance)
     const closeUpDistance =
       sceneManagerRef.current.calculateOptimalCameraDistance(
         actualPlanetRadius,
         false,
-        null
+        null,
+        null  // No max distance clamp
       );
 
+    // Improved safety distance that works better for small planets
+    // Use the larger of: 1.2x optimal distance OR 4x planet radius
     const safeDistance = Math.max(
-      closeUpDistance * 1.5,
-      actualPlanetRadius * 5
+      closeUpDistance * 1.2,
+      actualPlanetRadius * 4
     );
 
     sceneManagerRef.current.smoothCameraTransitionTrackingTarget(
@@ -155,8 +159,14 @@ export const useViewTransitions = ({
 
     // Fallback: Standard planet view
     const planetRadius = planetRendererRef.current.renderPlanet(planet);
+    // Remove max clamp for better planet framing
     const targetDistance =
-      sceneManagerRef.current.calculateOptimalCameraDistance(planetRadius);
+      sceneManagerRef.current.calculateOptimalCameraDistance(
+        planetRadius,
+        false,
+        null,
+        null  // No max distance clamp
+      );
 
     sceneManagerRef.current.smoothCameraTransition(
       new THREE.Vector3(0, 0, targetDistance),
