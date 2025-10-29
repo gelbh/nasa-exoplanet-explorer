@@ -39,9 +39,10 @@ const ExoplanetViewer = () => {
   // Comparison tool state
   const [comparisonPlanets, setComparisonPlanets] = useState([]);
 
-  // Track current planet/system for Tools tab (state for re-rendering)
+  // Track current planet/system/star for Tools tab (state for re-rendering)
   const [currentPlanet, setCurrentPlanet] = useState(null);
   const [currentSystem, setCurrentSystem] = useState(null);
+  const [currentStar, setCurrentStar] = useState(null);
   const [viewMode, setViewMode] = useState("galaxy");
 
   // Managers for new features
@@ -96,11 +97,14 @@ const ExoplanetViewer = () => {
   const {
     currentPlanetRef,
     currentSystemRef,
+    currentStarRef,
     viewModeRef,
     animateOrbitsRef,
     selectPlanet,
     selectSystem,
+    selectStar,
     transitionToPlanetFromSystem,
+    transitionToStarFromSystem,
     switchToGalaxyView,
   } = useViewTransitions({
     sceneManagerRef,
@@ -157,6 +161,7 @@ const ExoplanetViewer = () => {
     const syncState = () => {
       setCurrentPlanet(currentPlanetRef.current);
       setCurrentSystem(currentSystemRef.current);
+      setCurrentStar(currentStarRef.current);
       setViewMode(viewModeRef.current);
     };
 
@@ -167,6 +172,9 @@ const ExoplanetViewer = () => {
     if (selectSystem) {
       selectSystem.syncState = syncState;
     }
+    if (selectStar) {
+      selectStar.syncState = syncState;
+    }
     if (switchToGalaxyView) {
       switchToGalaxyView.syncState = syncState;
     }
@@ -176,31 +184,38 @@ const ExoplanetViewer = () => {
     if (transitionToPlanetFromSystem) {
       transitionToPlanetFromSystem.syncState = syncState;
     }
+    if (transitionToStarFromSystem) {
+      transitionToStarFromSystem.syncState = syncState;
+    }
   }, [
     currentPlanetRef,
     currentSystemRef,
+    currentStarRef,
     viewModeRef,
     selectPlanet,
     selectSystem,
+    selectStar,
     switchToGalaxyView,
     returnToGalaxyView,
     transitionToPlanetFromSystem,
+    transitionToStarFromSystem,
   ]);
 
-  // Update Info tab whenever planet/system/view changes
+  // Update Info tab whenever planet/system/star/view changes
   useEffect(() => {
     if (updateInfoTab && infoTabManagerRef.current) {
       try {
         updateInfoTab(viewMode, {
           currentSystem: currentSystem,
           currentPlanet: currentPlanet,
+          currentStar: currentStar,
         });
       } catch (error) {
         console.error("Error updating info tab:", error);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlanet, currentSystem, viewMode]);
+  }, [currentPlanet, currentSystem, currentStar, viewMode]);
 
   // ============================================
   // CUSTOM HOOKS - CANVAS INTERACTION
@@ -235,6 +250,11 @@ const ExoplanetViewer = () => {
     );
   };
 
+  const handleStarSelectFromCanvas = (system, starWorldPosition, starMesh) => {
+    // Transition to star view from system view
+    transitionToStarFromSystem(system, starWorldPosition, starMesh);
+  };
+
   const {
     setupCanvasEventListeners,
     removeCanvasEventListeners,
@@ -253,6 +273,7 @@ const ExoplanetViewer = () => {
     domRefs,
     onSystemSelect: handleSystemSelectFromCanvas,
     onPlanetSelect: transitionToPlanetFromSystem,
+    onStarSelect: handleStarSelectFromCanvas,
     onGalacticCenterClick: zoomToGalacticCenter,
   });
 
@@ -408,6 +429,12 @@ const ExoplanetViewer = () => {
         currentPlanetRef.current,
         filterManagerRef.current
       );
+    } else if (viewModeRef.current === "star" && currentStarRef.current) {
+      // When zooming out from star view, return to system view
+      cameraManagerRef.current.checkZoomOutToSystemView(
+        currentStarRef.current.starData,
+        filterManagerRef.current
+      );
     } else if (viewModeRef.current === "system" && currentSystemRef.current) {
       cameraManagerRef.current.checkZoomOutToGalaxyView();
     }
@@ -434,6 +461,15 @@ const ExoplanetViewer = () => {
           sceneManagerRef.current.camera
         );
       }
+    } else if (viewModeRef.current === "star") {
+      // Animate star surface (rotation, pulsation, flares)
+      if (systemRendererRef.current?.starRenderer) {
+        systemRendererRef.current.starRenderer.animateStars();
+      }
+      // Also update system renderer shaders in case we're showing the star
+      systemRendererRef.current.updateShaderUniforms(
+        sceneManagerRef.current.camera
+      );
     } else if (viewModeRef.current === "system") {
       if (animateOrbitsRef.current) {
         systemRendererRef.current.animateOrbits(
