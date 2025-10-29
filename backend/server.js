@@ -148,6 +148,14 @@ app.get("/api/planet/:name", limiter, async (req, res) => {
 
     // Sanitize input to prevent SQL injection
     // TAP queries require proper escaping of single quotes
+    // Additional validation: only allow alphanumeric, spaces, hyphens, and common planet name characters
+    if (!/^[a-zA-Z0-9\s\-_.()]+$/.test(planetName)) {
+      return res.status(400).json({
+        error: "Invalid planet name format",
+        message: "Planet name contains invalid characters",
+      });
+    }
+
     const sanitizedName = planetName.replace(/'/g, "''");
 
     const query = `
