@@ -80,6 +80,11 @@ export const useViewTransitions = ({
         updateInfoTab();
         switchToInfoTab();
 
+        // Sync state after ref updates
+        if (transitionToPlanetFromSystem.syncState) {
+          transitionToPlanetFromSystem.syncState();
+        }
+
         setTimeout(() => {
           cameraManagerRef.current.setTransitioning(false);
         }, 500);
@@ -89,6 +94,12 @@ export const useViewTransitions = ({
 
   const selectPlanet = (planet, systemData = null) => {
     currentPlanetRef.current = planet;
+    
+    // Sync state immediately after ref update
+    if (selectPlanet.syncState) {
+      selectPlanet.syncState();
+    }
+    
     cameraManagerRef.current.setTransitioning(true);
 
     if (!systemData && planet.hostStar) {
@@ -181,6 +192,12 @@ export const useViewTransitions = ({
     }
 
     viewModeRef.current = "system";
+    
+    // Sync state immediately after ref update
+    if (selectSystem.syncState) {
+      selectSystem.syncState();
+    }
+    
     updateUIForSystemView();
     cameraManagerRef.current.setTransitioning(true);
 
@@ -279,6 +296,11 @@ export const useViewTransitions = ({
   const switchToGalaxyView = () => {
     viewModeRef.current = "galaxy";
     const previousSystem = currentSystemRef.current;
+    
+    // Sync state immediately after ref update
+    if (switchToGalaxyView.syncState) {
+      switchToGalaxyView.syncState();
+    }
 
     systemRendererRef.current.cleanup();
     planetRendererRef.current.cleanup();

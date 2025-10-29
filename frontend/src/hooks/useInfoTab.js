@@ -179,6 +179,11 @@ export const useInfoTab = ({
     viewModeRef.current = "galaxy";
     currentPlanetRef.current = null;
     currentSystemRef.current = null;
+    
+    // Sync state immediately after ref update
+    if (returnToGalaxyView.syncState) {
+      returnToGalaxyView.syncState();
+    }
 
     const currentPos = sceneManagerRef.current.camera.position.clone();
     const targetCameraPos = currentPos.multiplyScalar(3);

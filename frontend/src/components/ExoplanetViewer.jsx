@@ -151,22 +151,32 @@ const ExoplanetViewer = () => {
   }, [updateInfoTab, switchToInfoTab, selectPlanet]);
 
   // Sync ref values to state for Tools tab re-rendering
+  // Instead of polling, we'll update via callbacks when refs change
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (currentPlanetRef.current !== currentPlanet) {
-        setCurrentPlanet(currentPlanetRef.current);
-      }
-      if (currentSystemRef.current !== currentSystem) {
-        setCurrentSystem(currentSystemRef.current);
-      }
-      if (viewModeRef.current !== viewMode) {
-        setViewMode(viewModeRef.current);
-      }
-    }, 100); // Check every 100ms
+    // Create callbacks to update state when refs change
+    const syncState = () => {
+      setCurrentPlanet(currentPlanetRef.current);
+      setCurrentSystem(currentSystemRef.current);
+      setViewMode(viewModeRef.current);
+    };
 
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPlanet, currentSystem, viewMode]);
+    // Store callback reference so hooks can call it
+    if (selectPlanet) {
+      selectPlanet.syncState = syncState;
+    }
+    if (selectSystem) {
+      selectSystem.syncState = syncState;
+    }
+    if (switchToGalaxyView) {
+      switchToGalaxyView.syncState = syncState;
+    }
+    if (returnToGalaxyView) {
+      returnToGalaxyView.syncState = syncState;
+    }
+    if (transitionToPlanetFromSystem) {
+      transitionToPlanetFromSystem.syncState = syncState;
+    }
+  }, [currentPlanetRef, currentSystemRef, viewModeRef, selectPlanet, selectSystem, switchToGalaxyView, returnToGalaxyView, transitionToPlanetFromSystem]);
 
   // Update Info tab whenever planet/system/view changes
   useEffect(() => {
