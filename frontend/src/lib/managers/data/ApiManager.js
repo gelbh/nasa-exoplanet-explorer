@@ -105,16 +105,34 @@ export class ApiManager {
 
       // Fetch from API if no valid cache
       if (!data) {
-        const response = await fetch(this.apiEndpoint);
+        // Add timeout to prevent hanging forever
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        try {
+          const response = await fetch(this.apiEndpoint, {
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          data = await response.json();
+
+          // Save to cache for next time
+          this.saveToCache(data);
+        } catch (error) {
+          clearTimeout(timeoutId);
+          if (error.name === "AbortError") {
+            throw new Error(
+              "Request timeout: NASA API is taking too long to respond"
+            );
+          }
+          throw error;
         }
-
-        data = await response.json();
-
-        // Save to cache for next time
-        this.saveToCache(data);
       }
 
       // Initialize arrays
