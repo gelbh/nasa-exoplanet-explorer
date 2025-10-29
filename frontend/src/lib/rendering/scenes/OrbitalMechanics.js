@@ -36,18 +36,28 @@ export class OrbitalMechanics {
   calculateOrbitRadius(planet, index, scaleFactor) {
     let orbitRadius;
 
-    // Use semi-major axis if available (most accurate)
-    if (planet.semiMajorAxis && planet.semiMajorAxis > 0) {
-      orbitRadius = planet.semiMajorAxis * scaleFactor;
+    // Validate and use semi-major axis if available (most accurate)
+    if (planet.semiMajorAxis) {
+      if (planet.semiMajorAxis < 0) {
+        console.warn(`Invalid negative semi-major axis for planet ${planet.name}: ${planet.semiMajorAxis}`);
+      } else if (planet.semiMajorAxis > 0) {
+        orbitRadius = planet.semiMajorAxis * scaleFactor;
+      }
     }
+    
     // Fallback to orbital period (Kepler's third law approximation)
-    else if (planet.orbitalPeriod && planet.orbitalPeriod > 0) {
-      // R^3 ∝ T^2 (simplified, assuming solar-mass star)
-      const au = Math.pow(planet.orbitalPeriod / 365.25, 2 / 3);
-      orbitRadius = au * scaleFactor;
+    if (!orbitRadius && planet.orbitalPeriod) {
+      if (planet.orbitalPeriod < 0) {
+        console.warn(`Invalid negative orbital period for planet ${planet.name}: ${planet.orbitalPeriod}`);
+      } else if (planet.orbitalPeriod > 0) {
+        // R^3 ∝ T^2 (simplified, assuming solar-mass star)
+        const au = Math.pow(planet.orbitalPeriod / 365.25, 2 / 3);
+        orbitRadius = au * scaleFactor;
+      }
     }
+    
     // Last resort: equal spacing
-    else {
+    if (!orbitRadius) {
       orbitRadius = (index + 1) * 3;
     }
 
@@ -81,7 +91,7 @@ export class OrbitalMechanics {
     let maxRadius = 0;
 
     planets.forEach((planet) => {
-      if (planet.semiMajorAxis && planet.semiMajorAxis > maxRadius) {
+      if (planet.semiMajorAxis && planet.semiMajorAxis > 0 && planet.semiMajorAxis > maxRadius) {
         maxRadius = planet.semiMajorAxis;
       }
     });
@@ -89,7 +99,7 @@ export class OrbitalMechanics {
     // If no semi-major axis data, use orbital period
     if (maxRadius === 0) {
       planets.forEach((planet) => {
-        if (planet.orbitalPeriod) {
+        if (planet.orbitalPeriod && planet.orbitalPeriod > 0) {
           const au = Math.pow(planet.orbitalPeriod / 365.25, 2 / 3);
           if (au > maxRadius) maxRadius = au;
         }
