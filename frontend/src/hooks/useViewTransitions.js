@@ -22,7 +22,8 @@ export const useViewTransitions = ({
   // View state
   const currentPlanetRef = useRef(null);
   const currentSystemRef = useRef(null);
-  const viewModeRef = useRef("galaxy"); // galaxy, system, planet, galacticCenter
+  const currentStarRef = useRef(null);
+  const viewModeRef = useRef("galaxy"); // galaxy, system, planet, star, galacticCenter
   const animateOrbitsRef = useRef(true);
 
   // ============================================
@@ -94,6 +95,117 @@ export const useViewTransitions = ({
         }, 500);
       }
     );
+  };
+
+  // ============================================
+  // STAR SELECTION
+  // ============================================
+
+  const transitionToStarFromSystem = (system, starWorldPosition, starMesh) => {
+    cameraManagerRef.current.setTransitioning(true);
+
+    // Get star radius from the mesh
+    const boundingBox = new THREE.Box3().setFromObject(starMesh);
+    const size = new THREE.Vector3();
+    boundingBox.getSize(size);
+    const actualStarRadius = Math.max(size.x, size.y, size.z) / 2;
+
+    // Calculate distance for star view - stars are typically larger than planets
+    // Use a more conservative multiplier for better viewing
+    const closeUpDistance =
+      sceneManagerRef.current.calculateOptimalCameraDistance(
+        actualStarRadius,
+        false,
+        null,
+        null // No max distance clamp
+      );
+
+    // Stars can be very large, so we want to pull back a bit more
+    const safeDistance = Math.max(
+      closeUpDistance * 1.5,
+      actualStarRadius * 5
+    );
+
+    sceneManagerRef.current.smoothCameraTransitionTrackingTarget(
+      starMesh,
+      safeDistance,
+      2000,
+      () => {
+        viewModeRef.current = "star";
+        currentStarRef.current = {
+          system: system,
+          starData: starMesh.userData.stellarData || system.planets[0], // Extract stellar data
+        };
+
+        // Hide planets and orbit lines when viewing star
+        systemRendererRef.current.planetMeshes.forEach((mesh) => {
+          mesh.visible = false;
+        });
+        systemRendererRef.current.orbitLines.forEach((line) => {
+          line.visible = false;
+        });
+
+        updateUIForStarView();
+        
+        const currentDistance =
+          sceneManagerRef.current.camera.position.length();
+        cameraManagerRef.current.updateLastCameraDistance(currentDistance);
+
+        updateInfoTab();
+        switchToInfoTab();
+
+        // Sync state after ref updates
+        if (transitionToStarFromSystem.syncState) {
+          transitionToStarFromSystem.syncState();
+        }
+
+        setTimeout(() => {
+          cameraManagerRef.current.setTransitioning(false);
+        }, 500);
+      }
+    );
+  };
+
+  const selectStar = (system) => {
+    currentStarRef.current = {
+      system: system,
+      starData: system.planets[0], // Stellar data is in planet objects
+    };
+
+    // Sync state immediately after ref update
+    if (selectStar.syncState) {
+      selectStar.syncState();
+    }
+
+    cameraManagerRef.current.setTransitioning(true);
+
+    // If we're already in the system view, just transition to the star
+    const alreadyInSystem =
+      viewModeRef.current === "system" &&
+      currentSystemRef.current &&
+      currentSystemRef.current.starName === system.starName;
+
+    if (alreadyInSystem) {
+      // Get the central star mesh
+      const centralStar = systemRendererRef.current.centralStar;
+      if (centralStar) {
+        const starWorldPosition = new THREE.Vector3();
+        centralStar.getWorldPosition(starWorldPosition);
+        transitionToStarFromSystem(system, starWorldPosition, centralStar);
+      }
+    } else {
+      // First switch to system view, then transition to star
+      selectSystem(system);
+
+      setTimeout(() => {
+        const centralStar = systemRendererRef.current.centralStar;
+        if (centralStar) {
+          const starWorldPosition = new THREE.Vector3();
+          centralStar.getWorldPosition(starWorldPosition);
+          transitionToStarFromSystem(system, starWorldPosition, centralStar);
+        }
+      }, 1600);
+    }
   };
 
   const selectPlanet = (planet, systemData = null) => {
@@ -406,16 +518,40 @@ export const useViewTransitions = ({
     updateSettingsVisibility("planet");
   };
 
+  const updateUIForStarView = () => {
+    const searchTitle = document.getElementById("searchTitle");
+    if (searchTitle) {
+      searchTitle.textContent = "Search Exoplanets";
+    }
+
+    const randomPlanetBtn = document.getElementById("randomPlanetBtn");
+    const randomSystemBtn = document.getElementById("randomSystemBtn");
+    if (randomPlanetBtn) randomPlanetBtn.style.display = "none";
+    if (randomSystemBtn) randomSystemBtn.style.display = "none";
+
+    const systemInstructions = document.getElementById("systemInstructions");
+    if (systemInstructions) systemInstructions.style.display = "none";
+
+    if (domRefs.searchInputRef.current) {
+      domRefs.searchInputRef.current.placeholder = "Search by name...";
+    }
+
+    updateSettingsVisibility("star");
+  };
+
   return {
     currentPlanetRef,
     currentSystemRef,
+    currentStarRef,
     viewModeRef,
     animateOrbitsRef,
     selectPlanet,
     selectSystem,
+    selectStar,
     selectRandomPlanet,
     selectRandomSystem,
     transitionToPlanetFromSystem,
+    transitionToStarFromSystem,
     switchToSystemView,
     switchToPlanetView,
     switchToGalaxyView,
