@@ -36,7 +36,7 @@ export class InfoTabManager {
   /**
    * Update information tab based on current view mode
    */
-  updateInfoTab(viewMode, { currentSystem, currentPlanet }) {
+  updateInfoTab(viewMode, { currentSystem, currentPlanet, currentStar }) {
     if (!this.infoContentTarget) return;
 
     if (viewMode === "galaxy") {
@@ -45,6 +45,8 @@ export class InfoTabManager {
       this.updateSystemInfo(currentSystem);
     } else if (viewMode === "planet" && currentPlanet) {
       this.updatePlanetInfo(currentPlanet);
+    } else if (viewMode === "star" && currentStar) {
+      this.updateStarInfo(currentStar);
     }
   }
 
@@ -434,6 +436,175 @@ export class InfoTabManager {
               )}</div>
             </div>
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Update info tab with star information
+   */
+  updateStarInfo(currentStar) {
+    if (!this.infoContentTarget) return;
+
+    const starData = currentStar.starData;
+    const system = currentStar.system;
+
+    // Extract stellar properties
+    const starName = system.starName || "Unknown Star";
+    const spectralType = starData.spectralType || "Unknown";
+    const stellarTemp = starData.stellarTemp
+      ? `${starData.stellarTemp.toFixed(0)} K`
+      : "Unknown";
+    const stellarRadius = starData.stellarRadius
+      ? `${starData.stellarRadius.toFixed(2)} R☉`
+      : "Unknown";
+    const stellarMass = starData.stellarMass
+      ? `${starData.stellarMass.toFixed(2)} M☉`
+      : "Unknown";
+    const stellarLuminosity = starData.stellarLuminosity
+      ? `${Math.pow(10, starData.stellarLuminosity).toFixed(2)} L☉`
+      : "Unknown";
+    const stellarAge = starData.stellarAge
+      ? `${starData.stellarAge.toFixed(2)} Gyr`
+      : "Unknown";
+    const distance = starData.distance
+      ? formatDistance(starData.distance)
+      : "Unknown";
+    const numberOfPlanets = system.count || system.planets?.length || 0;
+    const numberOfStars = starData.numberOfStars || 1;
+
+    // Determine star classification
+    let starClass = "Main Sequence Star";
+    if (spectralType) {
+      const mainClass = spectralType.charAt(0).toUpperCase();
+      if (mainClass === "O" || mainClass === "B") {
+        starClass = "Blue Giant";
+      } else if (mainClass === "A") {
+        starClass = "Blue-White Main Sequence";
+      } else if (mainClass === "F") {
+        starClass = "Yellow-White Main Sequence";
+      } else if (mainClass === "G") {
+        starClass = "Yellow Main Sequence (Sun-like)";
+      } else if (mainClass === "K") {
+        starClass = "Orange Main Sequence";
+      } else if (mainClass === "M") {
+        starClass = "Red Dwarf";
+      }
+    }
+
+    // Calculate comparison to Sun
+    const tempComparison =
+      starData.stellarTemp && starData.stellarTemp > 0
+        ? ((starData.stellarTemp / 5778) * 100).toFixed(0)
+        : null;
+    const radiusComparison =
+      starData.stellarRadius && starData.stellarRadius > 0
+        ? ((starData.stellarRadius / 1.0) * 100).toFixed(0)
+        : null;
+    const massComparison =
+      starData.stellarMass && starData.stellarMass > 0
+        ? ((starData.stellarMass / 1.0) * 100).toFixed(0)
+        : null;
+
+    this.infoContentTarget.innerHTML = `
+      <div class="info-star">
+        <h5 class="text-white mb-3 d-flex align-items-center">
+          <i class="bx bx-star me-2 text-warning"></i> ${escapeHtml(starName)}
+        </h5>
+
+        <div class="info-section mb-4">
+          <h6 class="text-white-50 mb-3 fs-sm text-uppercase">Stellar Classification</h6>
+          <div class="property-grid">
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Spectral Type</div>
+              <div class="text-white fw-semibold">${escapeHtml(spectralType)}</div>
+            </div>
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Classification</div>
+              <div class="text-white fw-semibold">${escapeHtml(starClass)}</div>
+            </div>
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Temperature</div>
+              <div class="text-white fw-semibold">${stellarTemp}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section mb-4">
+          <h6 class="text-white-50 mb-3 fs-sm text-uppercase">Physical Properties</h6>
+          <div class="property-grid">
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Radius</div>
+              <div class="text-white fw-semibold">${stellarRadius}</div>
+            </div>
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Mass</div>
+              <div class="text-white fw-semibold">${stellarMass}</div>
+            </div>
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Luminosity</div>
+              <div class="text-white fw-semibold">${stellarLuminosity}</div>
+            </div>
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Age</div>
+              <div class="text-white fw-semibold">${stellarAge}</div>
+            </div>
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Distance</div>
+              <div class="text-white fw-semibold">${distance}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section mb-4">
+          <h6 class="text-white-50 mb-3 fs-sm text-uppercase">Comparison to Our Sun</h6>
+          <div class="property-grid">
+            ${
+              tempComparison
+                ? `<div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                <div class="text-white-50 fs-sm">Temperature</div>
+                <div class="text-white fw-semibold">${tempComparison}% of Sun</div>
+              </div>`
+                : ""
+            }
+            ${
+              radiusComparison
+                ? `<div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                <div class="text-white-50 fs-sm">Radius</div>
+                <div class="text-white fw-semibold">${radiusComparison}% of Sun</div>
+              </div>`
+                : ""
+            }
+            ${
+              massComparison
+                ? `<div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                <div class="text-white-50 fs-sm">Mass</div>
+                <div class="text-white fw-semibold">${massComparison}% of Sun</div>
+              </div>`
+                : ""
+            }
+          </div>
+        </div>
+
+        <div class="info-section mb-4">
+          <h6 class="text-white-50 mb-3 fs-sm text-uppercase">Planetary System</h6>
+          <div class="property-grid">
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Number of Stars</div>
+              <div class="text-white fw-semibold">${numberOfStars === 1 ? "Single Star" : `${numberOfStars} Stars (Multiple Star System)`}</div>
+            </div>
+            <div class="property-item mb-2 p-2 rounded" style="background: rgba(255, 255, 255, 0.05);">
+              <div class="text-white-50 fs-sm">Confirmed Planets</div>
+              <div class="text-white fw-semibold">${numberOfPlanets}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info" style="font-size: 0.85rem;">
+          <i class="bx bx-info-circle me-1"></i>
+          <strong>Note:</strong> The star's surface features (sunspots, granulation, flares, corona) 
+          are procedurally generated based on its spectral type and physical properties.
         </div>
       </div>
     `;
