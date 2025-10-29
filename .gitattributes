@@ -1,0 +1,64 @@
+# Automatically normalize line endings for all text files
+* text=auto eol=lf
+
+# Binary files - prevent line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+
+# Font files
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+
+# Archives and packages
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+
+# Media files
+*.mp4 binary
+*.mp3 binary
+*.mov binary
+*.avi binary
+
+# Other binary files
+*.pdf binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+
+# Specific text files that should always use LF
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.js.map text eol=lf
+*.css.map text eol=lf
+
+# Config files
+*.config.js text eol=lf
+*.config.ts text eol=lf
+.editorconfig text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+
+# SVG can be text or binary depending on content, but treat as text for line ending normalization
+*.svg text eol=lf
+
