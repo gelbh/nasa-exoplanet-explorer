@@ -207,6 +207,22 @@ export class SettingsManager {
   }
 
   /**
+   * Reapply all system-specific settings to a newly rendered system
+   * Call this after rendering a new system to ensure UI state matches visual state
+   */
+  reapplySystemSettings() {
+    if (!this.systemRenderer) return;
+    
+    // Reapply visual settings
+    this.systemRenderer.toggleLabels(this.showPlanetLabels);
+    this.systemRenderer.toggleOrbitLines(this.showOrbitLines);
+    this.systemRenderer.toggleAtmospheres(this.showAtmospheres);
+    
+    // Note: Orbital inclination and realistic distances are handled during renderSystem()
+    // via parameters, so they don't need to be reapplied here
+  }
+
+  /**
    * Reset all settings to defaults
    * @returns {Object} Default values for UI updates
    */
