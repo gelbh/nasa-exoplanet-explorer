@@ -170,11 +170,11 @@ export class OrbitalMechanics {
 
     if (this.useRealisticDistances) {
       // Realistic mode: 1 solar radius = 0.00465 AU
-      // Scale it up by 100x to keep it visible (otherwise it's a tiny dot)
-      // This keeps relative sizes accurate while maintaining visibility
+      // Scale it up to be visible, but not so large that inner planets orbit inside
+      // Using a smaller boost (30x instead of 100x) keeps star visible while preventing overlap
       const solarRadiusInAU = 0.00465;
       const scaleFactor = 3.0; // Same as orbit scaling (1 AU = 3 units)
-      const visibilityBoost = 100; // Make it visible but keep proportions
+      const visibilityBoost = 30; // Reduced from 100 to prevent overlap with inner orbits
       return stellarRadius * solarRadiusInAU * scaleFactor * visibilityBoost;
     } else {
       // Compressed mode: Use clamped visual size
