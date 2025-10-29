@@ -140,6 +140,20 @@ app.get("/api/ping", (req, res) => {
   });
 });
 
+// Friendly root route for quick backend verification
+app.get("/", (req, res) => {
+  res.json({
+    service: "nasa-exoplanet-backend",
+    status: "ok",
+    endpoints: [
+      "/api/ping",
+      "/api/health",
+      "/api/exoplanets",
+      "/api/planet/:name",
+    ],
+  });
+});
+
 /**
  * GET /api/exoplanets
  * Fetches exoplanet data from NASA Exoplanet Archive
