@@ -135,23 +135,35 @@ export class ExportManager {
     const originalWidth = canvas.width;
     const originalHeight = canvas.height;
 
-    // Render at high resolution
-    this.sceneManager.renderer.setSize(width, height);
-    this.sceneManager.render();
+    try {
+      // Render at high resolution
+      this.sceneManager.renderer.setSize(width, height);
+      this.sceneManager.render();
 
-    // Get canvas data
-    const dataUrl = canvas.toDataURL("image/png");
+      // Get canvas data
+      // Note: This can fail if canvas is tainted (cross-origin images without CORS)
+      const dataUrl = canvas.toDataURL("image/png");
 
-    // Restore original size
-    this.sceneManager.renderer.setSize(originalWidth, originalHeight);
-    this.sceneManager.render();
+      // Restore original size
+      this.sceneManager.renderer.setSize(originalWidth, originalHeight);
+      this.sceneManager.render();
 
-    // Convert data URL to blob
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
 
-    console.log(`📸 Screenshot captured: ${width}x${height}`);
-    return blob;
+      console.log(`📸 Screenshot captured: ${width}x${height}`);
+      return blob;
+    } catch (error) {
+      // Restore original size on error
+      this.sceneManager.renderer.setSize(originalWidth, originalHeight);
+      this.sceneManager.render();
+      
+      console.error("Screenshot capture failed:", error);
+      throw new Error(
+        "Failed to capture screenshot. This may occur if the canvas contains cross-origin images without CORS headers."
+      );
+    }
   }
 
   /**
