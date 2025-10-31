@@ -355,38 +355,43 @@ export const useViewTransitions = ({
 
     // If coming from star view, just show planets instead of re-rendering
     if (wasStarView && currentSystemRef.current?.starName === system.starName) {
-      systemRendererRef.current.showAllPlanets();
+      if (!systemRendererRef.current) {
+        console.error('SystemRenderer not available when returning from star view');
+        // Fall through to normal rendering path
+      } else {
+        systemRendererRef.current.showAllPlanets();
 
-      // Compute bounds-based center and fit distance
-      const { center, size } =
-        systemRendererRef.current.getSystemCenterAndSize();
-      const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
-      const halfH = Math.max(size.y * 0.5, 0.001);
-      const halfW = Math.max(size.x * 0.5, 0.001);
-      const fitH = halfH / Math.tan(vFOV / 2);
-      const fitW =
-        halfW / (Math.tan(vFOV / 2) * sceneManagerRef.current.camera.aspect);
-      let distance = Math.max(fitW, fitH) * 1.2; // padding
-      if (!isFinite(distance) || distance <= 0) distance = 30;
+        // Compute bounds-based center and fit distance
+        const { center, size } =
+          systemRendererRef.current.getSystemCenterAndSize();
+        const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
+        const halfH = Math.max(size.y * 0.5, 0.001);
+        const halfW = Math.max(size.x * 0.5, 0.001);
+        const fitH = halfH / Math.tan(vFOV / 2);
+        const fitW =
+          halfW / (Math.tan(vFOV / 2) * sceneManagerRef.current.camera.aspect);
+        let distance = Math.max(fitW, fitH) * 1.2; // padding
+        if (!isFinite(distance) || distance <= 0) distance = 30;
 
-      const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
-      const position = direction.clone().multiplyScalar(distance).add(center);
+        const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
+        const position = direction.clone().multiplyScalar(distance).add(center);
 
-      sceneManagerRef.current.camera.position.copy(position);
-      sceneManagerRef.current.camera.lookAt(center);
-      if (sceneManagerRef.current?.controls) {
-        sceneManagerRef.current.controls.target.copy(center);
-        sceneManagerRef.current.controls.update();
+        sceneManagerRef.current.camera.position.copy(position);
+        sceneManagerRef.current.camera.lookAt(center);
+        if (sceneManagerRef.current?.controls) {
+          sceneManagerRef.current.controls.target.copy(center);
+          sceneManagerRef.current.controls.update();
+        }
+
+        cameraManagerRef.current.updateLastCameraDistance(distance);
+        setTimeout(() => {
+          cameraManagerRef.current.setTransitioning(false);
+        }, 500);
+
+        updateInfoTab();
+        switchToInfoTab();
+        return;
       }
-
-      cameraManagerRef.current.updateLastCameraDistance(distance);
-      setTimeout(() => {
-        cameraManagerRef.current.setTransitioning(false);
-      }, 500);
-
-      updateInfoTab();
-      switchToInfoTab();
-      return;
     }
 
     // Render the system before trying to get its bounds
