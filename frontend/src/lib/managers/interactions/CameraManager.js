@@ -36,11 +36,15 @@ export class CameraManager {
    */
   setCallbacks({ onSwitchToSystemView, onSwitchToGalaxyView }) {
     if (onSwitchToSystemView && typeof onSwitchToSystemView !== "function") {
-      console.error("CameraManager.setCallbacks: onSwitchToSystemView must be a function");
+      console.error(
+        "CameraManager.setCallbacks: onSwitchToSystemView must be a function"
+      );
       return;
     }
     if (onSwitchToGalaxyView && typeof onSwitchToGalaxyView !== "function") {
-      console.error("CameraManager.setCallbacks: onSwitchToGalaxyView must be a function");
+      console.error(
+        "CameraManager.setCallbacks: onSwitchToGalaxyView must be a function"
+      );
       return;
     }
     this.onSwitchToSystemView = onSwitchToSystemView;
@@ -194,21 +198,55 @@ export class CameraManager {
       this.sceneManager.controls.target.set(0, 0, 0);
       this.sceneManager.controls.update();
     } else if (viewMode === "system" && currentSystem) {
-      const maxOrbitRadius = systemRenderer.calculateMaxOrbitRadius(
-        currentSystem.planets
-      );
-      const optimalDistance = Math.max(15, maxOrbitRadius * 2.5);
+      // Prefer bounds-based framing if available
+      if (
+        systemRenderer &&
+        typeof systemRenderer.getSystemCenterAndSize === "function"
+      ) {
+        const { center, size } = systemRenderer.getSystemCenterAndSize();
+        const vFOV = (this.sceneManager.camera.fov * Math.PI) / 180;
+        const halfH = Math.max(size.y * 0.5, 0.001);
+        const halfW = Math.max(size.x * 0.5, 0.001);
+        const fitH = halfH / Math.tan(vFOV / 2);
+        const fitW =
+          halfW / (Math.tan(vFOV / 2) * this.sceneManager.camera.aspect);
+        let distance = Math.max(fitW, fitH) * 1.2; // padding
+        if (!isFinite(distance) || distance <= 0) distance = 30;
 
-      this.sceneManager.camera.position.set(
-        0,
-        optimalDistance * 0.4,
-        optimalDistance
-      );
-      this.sceneManager.camera.lookAt(0, 0, 0);
-      this.sceneManager.controls.target.set(0, 0, 0);
+        const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
+        const position = direction.clone().multiplyScalar(distance).add(center);
+
+        this.sceneManager.camera.position.copy(position);
+        this.sceneManager.camera.lookAt(center);
+        this.sceneManager.controls.target.copy(center);
+      } else {
+        const maxOrbitRadius = systemRenderer.calculateMaxOrbitRadius(
+          currentSystem.planets
+        );
+
+        let optimalDistance = this.sceneManager.calculateOptimalCameraDistance(
+          maxOrbitRadius,
+          true,
+          maxOrbitRadius,
+          null
+        );
+        if (!isFinite(optimalDistance) || optimalDistance <= 0) {
+          optimalDistance = 30;
+        }
+
+        const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
+        const targetPosition = direction
+          .clone()
+          .multiplyScalar(optimalDistance);
+
+        this.sceneManager.camera.position.copy(targetPosition);
+        this.sceneManager.camera.lookAt(0, 0, 0);
+        this.sceneManager.controls.target.set(0, 0, 0);
+      }
       this.sceneManager.controls.update();
 
-      this.lastCameraDistance = optimalDistance;
+      // Approximate last distance using current camera length
+      this.lastCameraDistance = this.sceneManager.camera.position.length();
     } else if (viewMode === "planet" && currentPlanet) {
       const planetRadius = Math.max(
         0.5,
