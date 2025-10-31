@@ -106,7 +106,6 @@ const ExoplanetViewer = () => {
     transitionToPlanetFromSystem,
     transitionToStarFromSystem,
     switchToSystemView,
-    switchToPlanetView,
     switchToGalaxyView,
     switchToGalaxyViewFromPlanet,
   } = useViewTransitions({

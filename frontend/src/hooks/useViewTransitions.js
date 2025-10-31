@@ -55,7 +55,7 @@ export const useViewTransitions = ({
     // Use a tighter distance for nice planet view (not too small, not clipped)
     const safeDistance = Math.max(
       closeUpDistance * 0.95, // Closer than before (was 1.2x, now 0.95x)
-      actualPlanetRadius * 3   // Reduced minimum distance (was 4x, now 3x)
+      actualPlanetRadius * 3 // Reduced minimum distance (was 4x, now 3x)
     );
 
     sceneManagerRef.current.smoothCameraTransitionTrackingTarget(
@@ -418,23 +418,26 @@ export const useViewTransitions = ({
     if (!isFinite(distance) || distance <= 0) distance = 30;
 
     const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
-    const finalPosition = direction.clone().multiplyScalar(distance).add(center);
+    const finalPosition = direction
+      .clone()
+      .multiplyScalar(distance)
+      .add(center);
 
     // If coming from galaxy view, use continuous smooth zoom in
     if (wasGalaxyView) {
       // Get the star position in galaxy before we start transitioning
-      const systemPosition = galaxyRendererRef.current.getSystemPosition(system);
+      const systemPosition =
+        galaxyRendererRef.current.getSystemPosition(system);
 
       if (systemPosition) {
-        // Get current camera position for smooth transition
-        const currentCameraPos = sceneManagerRef.current.camera.position.clone();
-
         // Define waypoints for continuous smooth zoom into system
         const waypoints = [];
 
         // Waypoint 1: Zoom toward star in galaxy (move closer)
         const zoomDistance = 15;
-        const zoomOffset = new THREE.Vector3(0, 0.5, 1).normalize().multiplyScalar(zoomDistance);
+        const zoomOffset = new THREE.Vector3(0, 0.5, 1)
+          .normalize()
+          .multiplyScalar(zoomDistance);
         const intermediatePos = systemPosition.clone().add(zoomOffset);
 
         waypoints.push({
@@ -525,7 +528,8 @@ export const useViewTransitions = ({
             systemRendererRef.current.renderSystem(
               system.planets,
               animateOrbitsRef.current,
-              infoTabManagerRef.current?.settingsManager?.useOrbitalInclination || false
+              infoTabManagerRef.current?.settingsManager
+                ?.useOrbitalInclination || false
             );
 
             // Update state BEFORE transition so planets animate during zoom
@@ -538,22 +542,24 @@ export const useViewTransitions = ({
             }
 
             // Get the system bounds for proper framing
-            const { center, size } = systemRendererRef.current.getSystemCenterAndSize();
+            const { center, size } =
+              systemRendererRef.current.getSystemCenterAndSize();
             const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
             const halfH = Math.max(size.y * 0.5, 0.001);
             const halfW = Math.max(size.x * 0.5, 0.001);
             const fitH = halfH / Math.tan(vFOV / 2);
-            const fitW = halfW / (Math.tan(vFOV / 2) * sceneManagerRef.current.camera.aspect);
+            const fitW =
+              halfW /
+              (Math.tan(vFOV / 2) * sceneManagerRef.current.camera.aspect);
             let distance = Math.max(fitW, fitH) * 1.2;
             if (!isFinite(distance) || distance <= 0) distance = 30;
 
-            // Get current camera position and direction
-            const currentPos = sceneManagerRef.current.camera.position.clone();
-            const currentDir = currentPos.clone().normalize();
-
             // Calculate final position with proper angle
             const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
-            const finalPosition = direction.clone().multiplyScalar(distance).add(center);
+            const finalPosition = direction
+              .clone()
+              .multiplyScalar(distance)
+              .add(center);
 
             // Enable following the planet during zoom out
             cameraManagerRef.current.setFollowPlanet(true);
@@ -639,7 +645,8 @@ export const useViewTransitions = ({
     let finalTarget;
 
     if (previousSystem) {
-      const systemPosition = galaxyRendererRef.current.getSystemPosition(previousSystem);
+      const systemPosition =
+        galaxyRendererRef.current.getSystemPosition(previousSystem);
 
       if (systemPosition) {
         // Position camera to show all stars in galaxy
