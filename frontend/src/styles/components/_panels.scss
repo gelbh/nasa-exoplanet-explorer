@@ -400,3 +400,171 @@
     top: 80px; // Below instructions pane
   }
 }
+
+// ============================================
+// TOOLS TAB - MINIMALIST CARD LAYOUT
+// ============================================
+
+.tools-tab-container {
+  background: transparent;
+}
+
+.tools-card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+  padding: $spacing-xs 0;
+}
+
+.tool-card {
+  background: $overlay-light;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  @include transition(all, $transition-normal, $easing-standard);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    border-color: $border-light;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+.tool-card-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-lg $spacing-xl;
+  background: $overlay-medium;
+  border-bottom: 1px solid $border-subtle;
+  @include transition(background, $transition-fast, $easing-standard);
+
+  .tool-card:hover & {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.tool-card-icon {
+  font-size: 1.5rem;
+  color: $color-primary;
+  opacity: 0.9;
+  @include transition(all, $transition-normal, $easing-standard);
+
+  .tool-card:hover & {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba($color-primary, 0.4));
+  }
+}
+
+.tool-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text-white;
+  letter-spacing: 0.02em;
+}
+
+.tool-card-body {
+  padding: $spacing-xl;
+  color: $text-white;
+
+  // Ensure child components have proper spacing
+  > *:last-child {
+    margin-bottom: 0;
+  }
+
+  // Override any excessive margins from child components
+  h5, h6 {
+    margin-top: 0;
+    margin-bottom: $spacing-md;
+  }
+
+  p {
+    margin-bottom: $spacing-md;
+  }
+
+  // Button group spacing
+  .btn-group,
+  .d-flex {
+    gap: $spacing-sm;
+  }
+
+  // Form elements
+  .form-control,
+  .form-select {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: $border-subtle;
+    color: $text-white;
+
+    &:focus {
+      background: rgba(0, 0, 0, 0.4);
+      border-color: $color-primary;
+      box-shadow: 0 0 0 0.2rem rgba($color-primary, 0.25);
+      color: $text-white;
+    }
+
+    &::placeholder {
+      color: $text-muted;
+    }
+  }
+
+  // Lists within cards
+  .list-group {
+    background: transparent;
+
+    .list-group-item {
+      background: rgba(0, 0, 0, 0.2);
+      border-color: $border-subtle;
+      color: $text-white;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.35);
+      }
+    }
+  }
+
+  // Empty state styling
+  .text-muted {
+    color: $text-muted !important;
+    font-style: italic;
+  }
+}
+
+// Responsive adjustments for tool cards
+@include respond-to-md {
+  .tools-card-grid {
+    gap: $spacing-lg;
+  }
+
+  .tool-card-header {
+    padding: $spacing-md $spacing-lg;
+  }
+
+  .tool-card-body {
+    padding: $spacing-lg;
+  }
+}
+
+@include respond-to-xs {
+  .tools-card-grid {
+    gap: $spacing-md;
+  }
+
+  .tool-card-header {
+    padding: $spacing-sm $spacing-md;
+  }
+
+  .tool-card-icon {
+    font-size: 1.25rem;
+  }
+
+  .tool-card-title {
+    font-size: 0.9rem;
+  }
+
+  .tool-card-body {
+    padding: $spacing-md;
+  }
+}

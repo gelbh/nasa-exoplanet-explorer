@@ -155,57 +155,76 @@ const CombinedPanel = ({
             role="tabpanel"
             aria-labelledby="tools-tab"
           >
-            <div className="p-3">
-              {/* Quick Actions */}
-              <QuickActions
-                currentPlanet={currentPlanet}
-                bookmarkManager={bookmarkManager}
-                comparisonPlanets={comparisonPlanets}
-                onAddToComparison={onAddToComparison}
-                onRemoveFromComparison={onRemoveFromComparison}
-              />
+            <div className="tools-tab-container p-3">
+              {/* Card Grid Layout */}
+              <div className="tools-card-grid">
+                {/* Quick Actions Card */}
+                <div className="tool-card">
+                  <div className="tool-card-header">
+                    <i className="bx bx-bolt-circle tool-card-icon"></i>
+                    <h5 className="tool-card-title">Quick Actions</h5>
+                  </div>
+                  <div className="tool-card-body">
+                    <QuickActions
+                      currentPlanet={currentPlanet}
+                      bookmarkManager={bookmarkManager}
+                      comparisonPlanets={comparisonPlanets}
+                      onAddToComparison={onAddToComparison}
+                      onRemoveFromComparison={onRemoveFromComparison}
+                    />
+                  </div>
+                </div>
 
-              <hr
-                className="my-4"
-                style={{ borderColor: "rgba(255,255,255,0.2)" }}
-              />
+                {/* Bookmarks Card */}
+                {bookmarkManager && (
+                  <div className="tool-card">
+                    <div className="tool-card-header">
+                      <i className="bx bx-bookmark-star tool-card-icon"></i>
+                      <h5 className="tool-card-title">Bookmarks</h5>
+                    </div>
+                    <div className="tool-card-body">
+                      <BookmarksPanel
+                        bookmarkManager={bookmarkManager}
+                        onPlanetSelect={onPlanetSelect}
+                        onSystemSelect={onSystemSelect}
+                      />
+                    </div>
+                  </div>
+                )}
 
-              {/* Bookmarks Section */}
-              {bookmarkManager && (
-                <>
-                  <BookmarksPanel
-                    bookmarkManager={bookmarkManager}
-                    onPlanetSelect={onPlanetSelect}
-                    onSystemSelect={onSystemSelect}
-                  />
-                  <hr
-                    className="my-4"
-                    style={{ borderColor: "rgba(255,255,255,0.2)" }}
-                  />
-                </>
-              )}
+                {/* Comparison Card */}
+                <div className="tool-card">
+                  <div className="tool-card-header">
+                    <i className="bx bx-git-compare tool-card-icon"></i>
+                    <h5 className="tool-card-title">Comparison Tool</h5>
+                  </div>
+                  <div className="tool-card-body">
+                    <ComparisonTool
+                      selectedPlanets={comparisonPlanets || []}
+                      onRemovePlanet={onRemoveFromComparison}
+                      onClearAll={onClearComparison}
+                      onViewIn3D={onViewComparisonIn3D}
+                    />
+                  </div>
+                </div>
 
-              {/* Comparison Section */}
-              <ComparisonTool
-                selectedPlanets={comparisonPlanets || []}
-                onRemovePlanet={onRemoveFromComparison}
-                onClearAll={onClearComparison}
-                onViewIn3D={onViewComparisonIn3D}
-              />
-
-              <hr
-                className="my-4"
-                style={{ borderColor: "rgba(255,255,255,0.2)" }}
-              />
-
-              {/* Share & Export Section */}
-              {exportManager && (
-                <ShareExportPanel
-                  exportManager={exportManager}
-                  viewState={viewState || {}}
-                  currentPlanet={currentPlanet}
-                />
-              )}
+                {/* Share & Export Card */}
+                {exportManager && (
+                  <div className="tool-card">
+                    <div className="tool-card-header">
+                      <i className="bx bx-share-alt tool-card-icon"></i>
+                      <h5 className="tool-card-title">Share & Export</h5>
+                    </div>
+                    <div className="tool-card-body">
+                      <ShareExportPanel
+                        exportManager={exportManager}
+                        viewState={viewState || {}}
+                        currentPlanet={currentPlanet}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
