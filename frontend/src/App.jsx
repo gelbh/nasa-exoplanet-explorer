@@ -1,4 +1,4 @@
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 import ExoplanetViewer from "./components/ExoplanetViewer";
 import ErrorBoundary from "./components/ErrorBoundary";
 
