@@ -11,7 +11,7 @@ import { CameraManager } from "../lib/managers/interactions/CameraManager.js";
  * Custom hook for managing Three.js scene and renderers
  * Handles initialization, animation loop, and cleanup
  */
-export const useThreeJSScene = (canvasRef, canvasLoadingRef) => {
+export const useThreeJSScene = (canvasRef) => {
   const sceneManagerRef = useRef(null);
   const planetRendererRef = useRef(null);
   const systemRendererRef = useRef(null);

@@ -344,63 +344,81 @@ export const useViewTransitions = ({
     updateUIForSystemView();
     cameraManagerRef.current.setTransitioning(true);
 
-    if (currentPlanetRef.current) {
-      cameraManagerRef.current.setFollowPlanet(true);
+    // Ensure we are not following any planet when framing the system
+    cameraManagerRef.current.setFollowPlanet(false);
+
+    // Force controls target to origin before any camera placement
+    if (sceneManagerRef.current?.controls) {
+      sceneManagerRef.current.controls.target.set(0, 0, 0);
+      sceneManagerRef.current.controls.update();
     }
 
     // If coming from star view, just show planets instead of re-rendering
     if (wasStarView && currentSystemRef.current?.starName === system.starName) {
       systemRendererRef.current.showAllPlanets();
 
-      // Still need to get system info for camera positioning
-      const maxRadius = systemRendererRef.current.calculateMaxOrbitRadius(
-        system.planets
-      );
-      const scaleFactor =
-        systemRendererRef.current.calculateScaleFactor(maxRadius);
-      const cameraDistance = Math.max(15, maxRadius * scaleFactor * 3.0);
+      // Compute bounds-based center and fit distance
+      const { center, size } =
+        systemRendererRef.current.getSystemCenterAndSize();
+      const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
+      const halfH = Math.max(size.y * 0.5, 0.001);
+      const halfW = Math.max(size.x * 0.5, 0.001);
+      const fitH = halfH / Math.tan(vFOV / 2);
+      const fitW =
+        halfW / (Math.tan(vFOV / 2) * sceneManagerRef.current.camera.aspect);
+      let distance = Math.max(fitW, fitH) * 1.2; // padding
+      if (!isFinite(distance) || distance <= 0) distance = 30;
 
-      sceneManagerRef.current.smoothCameraTransition(
-        new THREE.Vector3(0, cameraDistance * 0.4, cameraDistance * 0.9),
-        1500,
-        () => {
-          cameraManagerRef.current.updateLastCameraDistance(cameraDistance);
-          setTimeout(() => {
-            cameraManagerRef.current.setTransitioning(false);
-          }, 500);
-        }
-      );
+      const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
+      const position = direction.clone().multiplyScalar(distance).add(center);
+
+      sceneManagerRef.current.camera.position.copy(position);
+      sceneManagerRef.current.camera.lookAt(center);
+      if (sceneManagerRef.current?.controls) {
+        sceneManagerRef.current.controls.target.copy(center);
+        sceneManagerRef.current.controls.update();
+      }
+
+      cameraManagerRef.current.updateLastCameraDistance(distance);
+      setTimeout(() => {
+        cameraManagerRef.current.setTransitioning(false);
+      }, 500);
 
       updateInfoTab();
       switchToInfoTab();
       return;
     }
 
-    const systemInfo = systemRendererRef.current.renderSystem(
-      system.planets,
-      animateOrbitsRef.current,
-      infoTabManagerRef.current?.settingsManager?.useOrbitalInclination || false
-    );
-
     // Reapply settings after rendering new system
     if (infoTabManagerRef.current?.settingsManager) {
       infoTabManagerRef.current.settingsManager.reapplySystemSettings();
     }
 
-    const maxRadius = systemInfo.maxOrbitRadius * systemInfo.scaleFactor;
-    // Remove distance clamping for system view to allow large systems to be fully visible
-    const cameraDistance = Math.max(15, maxRadius * 3.0);
+    // Bounds-based center and fit distance after render
+    const { center, size } = systemRendererRef.current.getSystemCenterAndSize();
+    const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
+    const halfH = Math.max(size.y * 0.5, 0.001);
+    const halfW = Math.max(size.x * 0.5, 0.001);
+    const fitH = halfH / Math.tan(vFOV / 2);
+    const fitW =
+      halfW / (Math.tan(vFOV / 2) * sceneManagerRef.current.camera.aspect);
+    let distance = Math.max(fitW, fitH) * 1.2; // padding
+    if (!isFinite(distance) || distance <= 0) distance = 30;
 
-    sceneManagerRef.current.smoothCameraTransition(
-      new THREE.Vector3(0, cameraDistance * 0.4, cameraDistance * 0.9),
-      1500,
-      () => {
-        cameraManagerRef.current.updateLastCameraDistance(cameraDistance);
-        setTimeout(() => {
-          cameraManagerRef.current.setTransitioning(false);
-        }, 500);
-      }
-    );
+    const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
+    const position = direction.clone().multiplyScalar(distance).add(center);
+
+    sceneManagerRef.current.camera.position.copy(position);
+    sceneManagerRef.current.camera.lookAt(center);
+    if (sceneManagerRef.current?.controls) {
+      sceneManagerRef.current.controls.target.copy(center);
+      sceneManagerRef.current.controls.update();
+    }
+
+    cameraManagerRef.current.updateLastCameraDistance(distance);
+    setTimeout(() => {
+      cameraManagerRef.current.setTransitioning(false);
+    }, 500);
 
     updateInfoTab();
     switchToInfoTab();

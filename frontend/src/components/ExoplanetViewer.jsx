@@ -221,33 +221,19 @@ const ExoplanetViewer = () => {
   // CUSTOM HOOKS - CANVAS INTERACTION
   // ============================================
 
-  const handleSystemSelectFromCanvas = (system, systemPosition) => {
+  const handleSystemSelectFromCanvas = (system) => {
     cameraManagerRef.current.setTransitioning(true);
 
-    const zoomDistance = 8;
-    const direction = sceneManagerRef.current.camera.position
-      .clone()
-      .sub(systemPosition)
-      .normalize();
-    const targetCameraPos = systemPosition
-      .clone()
-      .add(direction.multiplyScalar(zoomDistance));
+    // Switch view state and delegate camera placement to selectSystem,
+    // which renders the system at origin and positions the camera accordingly.
+    viewModeRef.current = "system";
+    currentSystemRef.current = system;
+    galaxyRendererRef.current.cleanup();
+    selectSystem(system);
 
-    sceneManagerRef.current.smoothCameraTransitionWithTarget(
-      targetCameraPos,
-      systemPosition,
-      1000,
-      () => {
-        viewModeRef.current = "system";
-        currentSystemRef.current = system;
-        galaxyRendererRef.current.cleanup();
-        selectSystem(system);
-
-        setTimeout(() => {
-          cameraManagerRef.current.setTransitioning(false);
-        }, 300);
-      }
-    );
+    setTimeout(() => {
+      cameraManagerRef.current.setTransitioning(false);
+    }, 300);
   };
 
   const handleStarSelectFromCanvas = (system, starWorldPosition, starMesh) => {
