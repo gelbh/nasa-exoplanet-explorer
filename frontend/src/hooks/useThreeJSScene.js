@@ -51,11 +51,6 @@ export const useThreeJSScene = (canvasRef, canvasLoadingRef) => {
     // Setup raycaster for object detection
     raycasterRef.current = new THREE.Raycaster();
     mouseRef.current = new THREE.Vector2();
-
-    // Hide loading indicator
-    if (canvasLoadingRef.current) {
-      canvasLoadingRef.current.style.display = "none";
-    }
   };
 
   /**
