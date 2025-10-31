@@ -53,7 +53,9 @@ export const useCanvasInteraction = ({
       );
 
       // Check for star hover first
-      const centralStar = systemRendererRef.current.centralStar;
+      const centralStar = systemRendererRef.current
+        ? systemRendererRef.current.centralStar
+        : null;
       if (centralStar) {
         const starIntersects = raycasterRef.current.intersectObjects(
           [centralStar],
@@ -67,7 +69,9 @@ export const useCanvasInteraction = ({
       }
 
       // Then check for planet hover
-      const planetMeshes = systemRendererRef.current.getAllPlanetMeshes();
+      const planetMeshes = systemRendererRef.current
+        ? systemRendererRef.current.getAllPlanetMeshes()
+        : [];
       const intersects = raycasterRef.current.intersectObjects(
         planetMeshes,
         true
@@ -202,7 +206,9 @@ export const useCanvasInteraction = ({
       }
     } else if (viewModeRef.current === "system" && currentSystemRef.current) {
       // Check for star click first (higher priority)
-      const centralStar = systemRendererRef.current.centralStar;
+      const centralStar = systemRendererRef.current
+        ? systemRendererRef.current.centralStar
+        : null;
       if (centralStar) {
         const starIntersects = raycasterRef.current.intersectObjects(
           [centralStar],
@@ -385,9 +391,7 @@ export const useCanvasInteraction = ({
     boundEventListenersRef.current.canvasContextMenu = (event) =>
       event.preventDefault();
     boundEventListenersRef.current.canvasWheel = () => {
-      if (cameraManagerRef.current.followPlanet) {
-        cameraManagerRef.current.setFollowPlanet(false);
-      }
+      // Don't disable followPlanet on zoom - only panning should disable it
       if (
         tooltipManagerRef.current.getSelectedObject &&
         tooltipManagerRef.current.getSelectedObject()
