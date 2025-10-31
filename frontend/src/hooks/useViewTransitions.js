@@ -358,12 +358,6 @@ export const useViewTransitions = ({
       systemRendererRef.current.showAllPlanets();
 
       // Compute bounds-based center and fit distance
-      if (!systemRendererRef.current || typeof systemRendererRef.current.getSystemCenterAndSize !== 'function') {
-        console.error('SystemRenderer not available or missing getSystemCenterAndSize method');
-        cameraManagerRef.current.setTransitioning(false);
-        return;
-      }
-      
       const { center, size } =
         systemRendererRef.current.getSystemCenterAndSize();
       const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
@@ -395,18 +389,19 @@ export const useViewTransitions = ({
       return;
     }
 
+    // Render the system before trying to get its bounds
+    systemRendererRef.current.renderSystem(
+      system.planets,
+      animateOrbitsRef.current,
+      infoTabManagerRef.current?.settingsManager?.useOrbitalInclination || false
+    );
+
     // Reapply settings after rendering new system
     if (infoTabManagerRef.current?.settingsManager) {
       infoTabManagerRef.current.settingsManager.reapplySystemSettings();
     }
 
     // Bounds-based center and fit distance after render
-    if (!systemRendererRef.current || typeof systemRendererRef.current.getSystemCenterAndSize !== 'function') {
-      console.error('SystemRenderer not available or missing getSystemCenterAndSize method');
-      cameraManagerRef.current.setTransitioning(false);
-      return;
-    }
-    
     const { center, size } = systemRendererRef.current.getSystemCenterAndSize();
     const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
     const halfH = Math.max(size.y * 0.5, 0.001);
