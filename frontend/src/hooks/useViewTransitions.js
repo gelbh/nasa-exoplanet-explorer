@@ -356,7 +356,9 @@ export const useViewTransitions = ({
     // If coming from star view, just show planets instead of re-rendering
     if (wasStarView && currentSystemRef.current?.starName === system.starName) {
       if (!systemRendererRef.current) {
-        console.error('SystemRenderer not available when returning from star view');
+        console.error(
+          "SystemRenderer not available when returning from star view"
+        );
         // Fall through to normal rendering path
       } else {
         systemRendererRef.current.showAllPlanets();
