@@ -833,6 +833,84 @@ export class SystemRenderer {
   }
 
   /**
+   * Get the center and size of the entire system for camera framing
+   * @returns {Object} { center: THREE.Vector3, size: { x, y, z } }
+   */
+  getSystemCenterAndSize() {
+    // Default fallback if no system is rendered
+    if (this.planetMeshes.length === 0) {
+      return {
+        center: new THREE.Vector3(0, 0, 0),
+        size: { x: 20, y: 20, z: 20 }
+      };
+    }
+
+    // Calculate bounding box from all planet meshes and their orbits
+    let minX = 0, maxX = 0, minY = 0, maxY = 0, minZ = 0, maxZ = 0;
+
+    this.planetMeshes.forEach((mesh) => {
+      const orbitRadius = mesh.userData.orbitRadius || 0;
+      const planetRadius = mesh.userData.actualRadius || mesh.userData.baseRadius || 0;
+
+      // Account for the full orbital extent
+      minX = Math.min(minX, -orbitRadius - planetRadius);
+      maxX = Math.max(maxX, orbitRadius + planetRadius);
+      minZ = Math.min(minZ, -orbitRadius - planetRadius);
+      maxZ = Math.max(maxZ, orbitRadius + planetRadius);
+
+      // Account for vertical extent (for inclined orbits)
+      const planet = mesh.userData.planet;
+      if (planet && planet.orbitalInclination && this.useInclination) {
+        const inclinationRad = (planet.orbitalInclination * Math.PI) / 180;
+        const verticalExtent = orbitRadius * Math.sin(inclinationRad);
+        minY = Math.min(minY, -verticalExtent - planetRadius);
+        maxY = Math.max(maxY, verticalExtent + planetRadius);
+      } else {
+        minY = Math.min(minY, -planetRadius);
+        maxY = Math.max(maxY, planetRadius);
+      }
+    });
+
+    // Also account for the central star size
+    if (this.centralStar) {
+      // Get star radius from geometry or default
+      let starRadius = 1;
+      if (this.centralStar.type === 'Group') {
+        // Multi-star system - find the largest extent
+        this.centralStar.children.forEach(star => {
+          if (star.geometry && star.geometry.parameters) {
+            starRadius = Math.max(starRadius, star.geometry.parameters.radius || 1);
+          }
+        });
+      } else if (this.centralStar.geometry && this.centralStar.geometry.parameters) {
+        starRadius = this.centralStar.geometry.parameters.radius || 1;
+      }
+
+      minX = Math.min(minX, -starRadius);
+      maxX = Math.max(maxX, starRadius);
+      minY = Math.min(minY, -starRadius);
+      maxY = Math.max(maxY, starRadius);
+      minZ = Math.min(minZ, -starRadius);
+      maxZ = Math.max(maxZ, starRadius);
+    }
+
+    // Calculate center and size
+    const center = new THREE.Vector3(
+      (minX + maxX) / 2,
+      (minY + maxY) / 2,
+      (minZ + maxZ) / 2
+    );
+
+    const size = {
+      x: maxX - minX,
+      y: maxY - minY,
+      z: maxZ - minZ
+    };
+
+    return { center, size };
+  }
+
+  /**
    * Focus on a specific planet (hide others, stop animations)
    * @param {Object} planet - The planet to focus on
    */
@@ -1078,6 +1156,21 @@ export class SystemRenderer {
       }
       this.centralStar.material.needsUpdate = true;
     }
+  }
+
+  /**
+   * Cleanup all system objects after a delay
+   * Useful for keeping system visible during camera transitions
+   * @param {number} delay - Delay in milliseconds before cleanup
+   * @returns {Promise} - Resolves after cleanup completes
+   */
+  cleanupAfterDelay(delay) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        this.cleanup();
+        resolve();
+      }, delay);
+    });
   }
 
   /**

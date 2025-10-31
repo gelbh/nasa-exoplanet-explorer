@@ -655,6 +655,183 @@ export class SceneManager {
   }
 
   /**
+   * Promise-based camera transition wrapper
+   * Returns a promise that resolves when transition completes
+   */
+  smoothCameraTransitionAsync(targetPosition, targetLookAt, duration = 1500) {
+    return new Promise((resolve) => {
+      this.smoothCameraTransitionWithTarget(
+        targetPosition,
+        targetLookAt,
+        duration,
+        resolve
+      );
+    });
+  }
+
+  /**
+   * Cancel all active camera transitions
+   */
+  cancelAllTransitions() {
+    if (this.cameraTransitionId) {
+      cancelAnimationFrame(this.cameraTransitionId);
+      this.cameraTransitionId = null;
+    }
+    // Clear any transition-related animation frames
+    // (Future: track all transitions if we add more cancellable ones)
+  }
+
+  /**
+   * Smooth continuous waypoint transition
+   * Camera moves through all waypoints in ONE continuous motion without stopping
+   *
+   * @param {Array} waypoints - Array of waypoints
+   * Each waypoint: {
+   *   position: THREE.Vector3 - Camera position
+   *   lookAt: THREE.Vector3 - Look-at target
+   *   duration: number - Time to reach this waypoint from previous (ms)
+   *   onReach: function - Optional callback when reaching this waypoint
+   * }
+   * @returns {Promise} - Resolves when transition completes
+   */
+  smoothWaypointTransition(waypoints) {
+    return new Promise((resolve) => {
+      if (!waypoints || waypoints.length === 0) {
+        resolve();
+        return;
+      }
+
+      const startPosition = this.camera.position.clone();
+      const startLookAt = this.controls.target.clone();
+
+      // Calculate total duration and cumulative times
+      let totalDuration = 0;
+      const cumulativeTimes = [0];
+
+      for (let i = 0; i < waypoints.length; i++) {
+        totalDuration += waypoints[i].duration || 1000;
+        cumulativeTimes.push(totalDuration);
+      }
+
+      const startTime = performance.now();
+
+      const animate = () => {
+        const currentTime = performance.now();
+        const elapsed = currentTime - startTime;
+
+        if (elapsed >= totalDuration) {
+          // Transition complete - snap to final waypoint
+          const finalWaypoint = waypoints[waypoints.length - 1];
+          this.camera.position.copy(finalWaypoint.position);
+          this.camera.lookAt(finalWaypoint.lookAt);
+          this.controls.target.copy(finalWaypoint.lookAt);
+          this.controls.update();
+
+          // Execute final callback if provided
+          if (finalWaypoint.onReach) {
+            finalWaypoint.onReach();
+          }
+
+          resolve();
+          return;
+        }
+
+        // Find which segment we're in
+        let segmentIndex = 0;
+        for (let i = 0; i < cumulativeTimes.length - 1; i++) {
+          if (elapsed >= cumulativeTimes[i] && elapsed < cumulativeTimes[i + 1]) {
+            segmentIndex = i;
+            break;
+          }
+        }
+
+        // Calculate progress within current segment
+        const segmentStart = cumulativeTimes[segmentIndex];
+        const segmentEnd = cumulativeTimes[segmentIndex + 1];
+        const segmentDuration = segmentEnd - segmentStart;
+        const segmentProgress = (elapsed - segmentStart) / segmentDuration;
+
+        // Apply global easing (ease-in-out cubic for smooth continuous motion)
+        const easedProgress = segmentProgress < 0.5
+          ? 4 * segmentProgress * segmentProgress * segmentProgress
+          : 1 - Math.pow(-2 * segmentProgress + 2, 3) / 2;
+
+        // Determine start and end points for current segment
+        const segmentStartPos = segmentIndex === 0 ? startPosition : waypoints[segmentIndex - 1].position;
+        const segmentStartLookAt = segmentIndex === 0 ? startLookAt : waypoints[segmentIndex - 1].lookAt;
+        const segmentEndPos = waypoints[segmentIndex].position;
+        const segmentEndLookAt = waypoints[segmentIndex].lookAt;
+
+        // Interpolate position and look-at
+        const newPosition = new THREE.Vector3().lerpVectors(
+          segmentStartPos,
+          segmentEndPos,
+          easedProgress
+        );
+        const newLookAt = new THREE.Vector3().lerpVectors(
+          segmentStartLookAt,
+          segmentEndLookAt,
+          easedProgress
+        );
+
+        this.camera.position.copy(newPosition);
+        this.camera.lookAt(newLookAt);
+        this.controls.target.copy(newLookAt);
+        this.controls.update();
+
+        // Check if we just reached a waypoint (trigger callback once)
+        if (segmentIndex > 0 && easedProgress > 0.99 && waypoints[segmentIndex - 1].onReach) {
+          if (!waypoints[segmentIndex - 1]._reached) {
+            waypoints[segmentIndex - 1]._reached = true;
+            waypoints[segmentIndex - 1].onReach();
+          }
+        }
+
+        requestAnimationFrame(animate);
+      };
+
+      animate();
+    });
+  }
+
+  /**
+   * Multi-stage camera transition helper
+   * Executes multiple camera transitions in sequence
+   *
+   * @param {Array} stages - Array of transition stages
+   * Each stage: {
+   *   position: THREE.Vector3 - Target camera position
+   *   lookAt: THREE.Vector3 - Target look-at point
+   *   duration: number - Transition duration in ms
+   *   beforeStage: function - Optional callback before stage starts
+   *   afterStage: function - Optional callback after stage completes
+   * }
+   * @returns {Promise} - Resolves when all stages complete
+   */
+  async multiStageTransition(stages) {
+    for (let i = 0; i < stages.length; i++) {
+      const stage = stages[i];
+
+      // Execute beforeStage callback if provided
+      if (stage.beforeStage) {
+        await stage.beforeStage();
+      }
+
+      // Execute the camera transition for this stage
+      await this.smoothCameraTransitionAsync(
+        stage.position,
+        stage.lookAt,
+        stage.duration || 1500
+      );
+
+      // Execute afterStage callback if provided
+      if (stage.afterStage) {
+        await stage.afterStage();
+      }
+    }
+  }
+
+  /**
    * Cleanup scene objects
    */
   cleanup() {
