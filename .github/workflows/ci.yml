@@ -27,11 +27,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check code formatting
+        run: npm run format:check
+
       - name: Run linter
-        run: npm run lint || echo "Linting skipped - no lint script"
+        run: npm run lint
 
       - name: Run tests
-        run: npm test || echo "Tests skipped - no test script"
+        run: npm test
 
   # Frontend Tests
   frontend-test:
@@ -53,11 +56,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check code formatting
+        run: npm run format:check
+
       - name: Run linter
         run: npm run lint
 
       - name: Run tests
-        run: npm test || echo "Tests skipped - installing jest first"
+        run: npm test
 
       - name: Build
         run: npm run build
