@@ -51,11 +51,11 @@ export const useViewTransitions = ({
         null // No max distance clamp
       );
 
-    // Improved safety distance that works better for small planets
-    // Use the larger of: 1.2x optimal distance OR 4x planet radius
+    // Zoom in closer for better planet framing
+    // Use a tighter distance for nice planet view (not too small, not clipped)
     const safeDistance = Math.max(
-      closeUpDistance * 1.2,
-      actualPlanetRadius * 4
+      closeUpDistance * 0.95, // Closer than before (was 1.2x, now 0.95x)
+      actualPlanetRadius * 3   // Reduced minimum distance (was 4x, now 3x)
     );
 
     sceneManagerRef.current.smoothCameraTransitionTrackingTarget(
@@ -325,14 +325,11 @@ export const useViewTransitions = ({
   // SYSTEM SELECTION
   // ============================================
 
-  const selectSystem = (system) => {
+  const selectSystem = async (system) => {
     currentSystemRef.current = system;
 
     const wasStarView = viewModeRef.current === "star";
-
-    if (viewModeRef.current === "galaxy") {
-      galaxyRendererRef.current.cleanup();
-    }
+    const wasGalaxyView = viewModeRef.current === "galaxy";
 
     viewModeRef.current = "system";
 
@@ -346,12 +343,6 @@ export const useViewTransitions = ({
 
     // Ensure we are not following any planet when framing the system
     cameraManagerRef.current.setFollowPlanet(false);
-
-    // Force controls target to origin before any camera placement
-    if (sceneManagerRef.current?.controls) {
-      sceneManagerRef.current.controls.target.set(0, 0, 0);
-      sceneManagerRef.current.controls.update();
-    }
 
     // If coming from star view, just show planets instead of re-rendering
     if (wasStarView && currentSystemRef.current?.starName === system.starName) {
@@ -396,7 +387,14 @@ export const useViewTransitions = ({
       }
     }
 
-    // Render the system before trying to get its bounds
+    // Check if system renderer is available
+    if (!systemRendererRef.current) {
+      console.error("SystemRenderer not available for rendering system");
+      cameraManagerRef.current.setTransitioning(false);
+      return;
+    }
+
+    // Render the system at origin first
     systemRendererRef.current.renderSystem(
       system.planets,
       animateOrbitsRef.current,
@@ -408,7 +406,7 @@ export const useViewTransitions = ({
       infoTabManagerRef.current.settingsManager.reapplySystemSettings();
     }
 
-    // Bounds-based center and fit distance after render
+    // Calculate final system framing
     const { center, size } = systemRendererRef.current.getSystemCenterAndSize();
     const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
     const halfH = Math.max(size.y * 0.5, 0.001);
@@ -420,19 +418,66 @@ export const useViewTransitions = ({
     if (!isFinite(distance) || distance <= 0) distance = 30;
 
     const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
-    const position = direction.clone().multiplyScalar(distance).add(center);
+    const finalPosition = direction.clone().multiplyScalar(distance).add(center);
 
-    sceneManagerRef.current.camera.position.copy(position);
-    sceneManagerRef.current.camera.lookAt(center);
-    if (sceneManagerRef.current?.controls) {
-      sceneManagerRef.current.controls.target.copy(center);
-      sceneManagerRef.current.controls.update();
+    // If coming from galaxy view, use continuous smooth zoom in
+    if (wasGalaxyView) {
+      // Get the star position in galaxy before we start transitioning
+      const systemPosition = galaxyRendererRef.current.getSystemPosition(system);
+
+      if (systemPosition) {
+        // Get current camera position for smooth transition
+        const currentCameraPos = sceneManagerRef.current.camera.position.clone();
+
+        // Define waypoints for continuous smooth zoom into system
+        const waypoints = [];
+
+        // Waypoint 1: Zoom toward star in galaxy (move closer)
+        const zoomDistance = 15;
+        const zoomOffset = new THREE.Vector3(0, 0.5, 1).normalize().multiplyScalar(zoomDistance);
+        const intermediatePos = systemPosition.clone().add(zoomOffset);
+
+        waypoints.push({
+          position: intermediatePos,
+          lookAt: systemPosition,
+          duration: 1800,
+          onReach: () => {
+            // Cleanup galaxy as we zoom closer
+            galaxyRendererRef.current.cleanup();
+          },
+        });
+
+        // Waypoint 2: Final system framing (smooth transition to system view)
+        waypoints.push({
+          position: finalPosition,
+          lookAt: center,
+          duration: 2200,
+        });
+
+        // Execute continuous smooth zoom in
+        await sceneManagerRef.current.smoothWaypointTransition(waypoints);
+      } else {
+        // Fallback: just cleanup galaxy and position
+        galaxyRendererRef.current.cleanup();
+        sceneManagerRef.current.camera.position.copy(finalPosition);
+        sceneManagerRef.current.camera.lookAt(center);
+        if (sceneManagerRef.current?.controls) {
+          sceneManagerRef.current.controls.target.copy(center);
+          sceneManagerRef.current.controls.update();
+        }
+      }
+    } else {
+      // Instant positioning for non-galaxy views
+      sceneManagerRef.current.camera.position.copy(finalPosition);
+      sceneManagerRef.current.camera.lookAt(center);
+      if (sceneManagerRef.current?.controls) {
+        sceneManagerRef.current.controls.target.copy(center);
+        sceneManagerRef.current.controls.update();
+      }
     }
 
     cameraManagerRef.current.updateLastCameraDistance(distance);
-    setTimeout(() => {
-      cameraManagerRef.current.setTransitioning(false);
-    }, 500);
+    cameraManagerRef.current.setTransitioning(false);
 
     updateInfoTab();
     switchToInfoTab();
@@ -449,8 +494,9 @@ export const useViewTransitions = ({
   // VIEW SWITCHING
   // ============================================
 
-  const switchToSystemView = () => {
-    cameraManagerRef.current.setFollowPlanet(false);
+  const switchToSystemView = async () => {
+    const wasPlanetView = viewModeRef.current === "planet";
+
     updateUIForSystemView();
     updateOrbitSpeedDisplay();
     domRefs.canvasRef.current.classList.remove("grabbing", "moving", "pointer");
@@ -458,18 +504,91 @@ export const useViewTransitions = ({
 
     const notableSystems = filterManagerRef.current.getNotableSystems();
     uiManagerRef.current.updateSystemsList(notableSystems);
-    planetRendererRef.current.cleanup();
 
     if (currentPlanetRef.current) {
       const systemPlanets = filterManagerRef.current.getPlanetsForSystem(
         currentPlanetRef.current.hostStar
       );
       if (systemPlanets.length > 1) {
-        selectSystem({
+        const system = {
           starName: currentPlanetRef.current.hostStar,
           planets: systemPlanets,
           count: systemPlanets.length,
-        });
+        };
+
+        // If coming from planet view, use continuous smooth transition
+        if (wasPlanetView) {
+          cameraManagerRef.current.setTransitioning(true);
+
+          // Render the system first to get proper bounds
+          if (systemRendererRef.current) {
+            systemRendererRef.current.renderSystem(
+              system.planets,
+              animateOrbitsRef.current,
+              infoTabManagerRef.current?.settingsManager?.useOrbitalInclination || false
+            );
+
+            // Update state BEFORE transition so planets animate during zoom
+            currentSystemRef.current = system;
+            viewModeRef.current = "system";
+
+            // Sync state immediately after ref update
+            if (selectSystem.syncState) {
+              selectSystem.syncState();
+            }
+
+            // Get the system bounds for proper framing
+            const { center, size } = systemRendererRef.current.getSystemCenterAndSize();
+            const vFOV = (sceneManagerRef.current.camera.fov * Math.PI) / 180;
+            const halfH = Math.max(size.y * 0.5, 0.001);
+            const halfW = Math.max(size.x * 0.5, 0.001);
+            const fitH = halfH / Math.tan(vFOV / 2);
+            const fitW = halfW / (Math.tan(vFOV / 2) * sceneManagerRef.current.camera.aspect);
+            let distance = Math.max(fitW, fitH) * 1.2;
+            if (!isFinite(distance) || distance <= 0) distance = 30;
+
+            // Get current camera position and direction
+            const currentPos = sceneManagerRef.current.camera.position.clone();
+            const currentDir = currentPos.clone().normalize();
+
+            // Calculate final position with proper angle
+            const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
+            const finalPosition = direction.clone().multiplyScalar(distance).add(center);
+
+            // Enable following the planet during zoom out
+            cameraManagerRef.current.setFollowPlanet(true);
+
+            // Create smooth continuous motion from planet to system view
+            // Use a single smooth zoom out that centers on the star
+            const waypoints = [];
+
+            // Single waypoint for smooth continuous zoom out
+            // Zoom out along a smooth path while centering on the star
+            waypoints.push({
+              position: finalPosition,
+              lookAt: center,
+              duration: 2500, // Longer duration for smooth continuous motion
+              onReach: () => {
+                // Cleanup planet renderer after transition completes
+                planetRendererRef.current.cleanup();
+                // Keep following planet even after transition
+              },
+            });
+
+            // Execute continuous smooth transition
+            await sceneManagerRef.current.smoothWaypointTransition(waypoints);
+
+            cameraManagerRef.current.setTransitioning(false);
+            cameraManagerRef.current.updateLastCameraDistance(distance);
+
+            updateInfoTab();
+            switchToInfoTab();
+            return;
+          }
+        }
+
+        // Fall back to normal selectSystem if not from planet view
+        selectSystem(system);
       } else if (notableSystems.length > 0) {
         selectSystem(notableSystems[0]);
       }
@@ -497,7 +616,8 @@ export const useViewTransitions = ({
     }
   };
 
-  const switchToGalaxyView = () => {
+  const switchToGalaxyView = async () => {
+    cameraManagerRef.current.setTransitioning(true);
     viewModeRef.current = "galaxy";
     const previousSystem = currentSystemRef.current;
 
@@ -506,43 +626,69 @@ export const useViewTransitions = ({
       switchToGalaxyView.syncState();
     }
 
-    systemRendererRef.current.cleanup();
+    // Cleanup renderers immediately to avoid seeing them behind galaxy
     planetRendererRef.current.cleanup();
+    systemRendererRef.current.cleanup();
 
+    // Render galaxy
     const notableSystems = filterManagerRef.current.getNotableSystems();
     galaxyRendererRef.current.renderGalaxy(notableSystems);
 
+    // Calculate final galaxy overview position
+    let finalCameraPos;
+    let finalTarget;
+
     if (previousSystem) {
-      const systemPosition =
-        galaxyRendererRef.current.getSystemPosition(previousSystem);
+      const systemPosition = galaxyRendererRef.current.getSystemPosition(previousSystem);
 
       if (systemPosition) {
+        // Position camera to show all stars in galaxy
         const distance = 30;
         const offset = new THREE.Vector3(0, 1, 1.5)
           .normalize()
           .multiplyScalar(distance);
-        const cameraPos = systemPosition.clone().add(offset);
-
-        sceneManagerRef.current.camera.position.copy(cameraPos);
-        sceneManagerRef.current.controls.target.copy(systemPosition);
-        sceneManagerRef.current.camera.lookAt(systemPosition);
-        sceneManagerRef.current.controls.update();
+        finalCameraPos = systemPosition.clone().add(offset);
+        finalTarget = systemPosition;
       } else {
-        sceneManagerRef.current.camera.position.set(0, 30, 30);
-        sceneManagerRef.current.camera.lookAt(0, 0, 0);
-        sceneManagerRef.current.controls.target.set(0, 0, 0);
-        sceneManagerRef.current.controls.update();
+        finalCameraPos = new THREE.Vector3(0, 60, 60);
+        finalTarget = new THREE.Vector3(0, 0, 0);
       }
     } else {
-      sceneManagerRef.current.camera.position.set(0, 60, 60);
-      sceneManagerRef.current.camera.lookAt(0, 0, 0);
-      sceneManagerRef.current.controls.target.set(0, 0, 0);
+      finalCameraPos = new THREE.Vector3(0, 60, 60);
+      finalTarget = new THREE.Vector3(0, 0, 0);
+    }
+
+    // Instant positioning - no animation
+    sceneManagerRef.current.camera.position.copy(finalCameraPos);
+    sceneManagerRef.current.camera.lookAt(finalTarget);
+    if (sceneManagerRef.current?.controls) {
+      sceneManagerRef.current.controls.target.copy(finalTarget);
       sceneManagerRef.current.controls.update();
     }
+
+    // Update state
+    cameraManagerRef.current.setTransitioning(false);
+    cameraManagerRef.current.updateLastCameraDistance(
+      sceneManagerRef.current.camera.position.length()
+    );
 
     updateInfoTab();
     switchToInfoTab();
     updateSettingsVisibility("galaxy");
+  };
+
+  /**
+   * Switch to galaxy view from planet view
+   * Instantly switches to galaxy - no transition animation
+   */
+  const switchToGalaxyViewFromPlanet = async () => {
+    if (viewModeRef.current !== "planet") {
+      // Not in planet view, use regular switchToGalaxyView
+      return switchToGalaxyView();
+    }
+
+    // Just use the regular switchToGalaxyView which now has no animation
+    return switchToGalaxyView();
   };
 
   // ============================================
@@ -636,5 +782,6 @@ export const useViewTransitions = ({
     switchToSystemView,
     switchToPlanetView,
     switchToGalaxyView,
+    switchToGalaxyViewFromPlanet,
   };
 };
