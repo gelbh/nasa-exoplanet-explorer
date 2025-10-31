@@ -19,8 +19,8 @@ export class CameraManager {
 
     // Zoom thresholds for auto-switching views
     this.systemZoomThreshold = 18;
-    this.baseGalaxyZoomThreshold = 60;
-    this.realisticDistancesGalaxyZoomThreshold = 200; // Much higher for realistic distances
+    this.baseGalaxyZoomThreshold = 35; // Lowered from 60 for easier exit from system view
+    this.realisticDistancesGalaxyZoomThreshold = 100; // Lowered from 200 for easier exit in realistic mode
     this.galaxyZoomThreshold = this.baseGalaxyZoomThreshold;
     this.lastCameraDistance = 5;
     this.isTransitioning = false;
