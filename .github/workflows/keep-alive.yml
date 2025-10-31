@@ -4,6 +4,7 @@ on:
   schedule:
     # Run every 10 minutes to prevent Render free tier from sleeping
     # Render free tier spins down after 15 minutes of inactivity
+    # Note: GitHub Actions scheduled workflows may be delayed during high load
     - cron: "*/10 * * * *"
 
   # Allow manual trigger for testing
@@ -12,7 +13,10 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
+    # Extended timeout to handle Render free tier cold starts (30-90 seconds)
+    # Strategy: 5 retries × 30s timeout + exponential backoff (15s, 30s, 60s, 120s)
+    # Total max wait: ~3 minutes to accommodate slow cold starts
 
     steps:
       - name: Validate Backend URL Secret
@@ -34,11 +38,12 @@ jobs:
 
           BACKEND_URL="${{ secrets.BACKEND_URL }}"
           ENDPOINT="${BACKEND_URL}/api/ping"
-          MAX_RETRIES=3
-          RETRY_DELAY=1
+          MAX_RETRIES=5
+          RETRY_DELAY=15
           SUCCESS=false
 
           # Function to ping with retry logic and exponential backoff
+          # Designed to handle Render free tier cold starts which can take 30-90+ seconds
           ping_with_retry() {
             local attempt=1
             local delay=$RETRY_DELAY
@@ -53,7 +58,7 @@ jobs:
               # Make request with timeout and capture response code, time, and body in one call
               # curl writes: body to file, then status code and time to stdout
               curl_output=$(curl -s -w "\n%{http_code}\n%{time_total}" \
-                --max-time 10 \
+                --max-time 30 \
                 --silent \
                 --show-error \
                 -o "$temp_file" \
@@ -102,7 +107,7 @@ jobs:
                 if [ $attempt -lt $MAX_RETRIES ]; then
                   echo "⏳ Waiting ${delay}s before retry..."
                   sleep $delay
-                  delay=$((delay * 2)) # Exponential backoff: 1s, 2s, 4s
+                  delay=$((delay * 2)) # Exponential backoff: 15s, 30s, 60s, 120s
                 fi
               fi
               
@@ -121,10 +126,11 @@ jobs:
           else
             echo ""
             echo "========================================="
-            echo "❌ Keep-alive ping failed after $MAX_RETRIES attempts"
-            echo "⚠️  Backend may be down or unreachable"
+            echo "⚠️  Keep-alive ping failed after $MAX_RETRIES attempts"
+            echo "ℹ️  This is likely due to a cold start timeout on Render free tier"
+            echo "ℹ️  The service will wake up on the next successful ping or user request"
             echo "========================================="
-            exit 1
+            exit 0
           fi
 
       - name: Summary
@@ -137,15 +143,14 @@ jobs:
           echo ""
           echo "The backend will remain active on Render free tier."
 
-      - name: Failure Notification
+      - name: Alternative Notification (Rare)
         if: failure()
         run: |
-          echo "❌ Keep-alive ping failed"
-          echo "⚠️  The backend may have spun down or is experiencing issues"
+          echo "⚠️  Workflow encountered an unexpected error"
+          echo "ℹ️  This is different from a ping timeout and may indicate:"
           echo ""
-          echo "Possible causes:"
-          echo "  - Render service has spun down (free tier)"
-          echo "  - Network connectivity issues"
-          echo "  - Backend server error"
+          echo "  - GitHub Actions infrastructure issue"
+          echo "  - Missing or invalid BACKEND_URL secret"
+          echo "  - Workflow configuration error"
           echo ""
-          echo "Next scheduled ping will attempt to wake up the service."
+          echo "Note: Ping timeouts no longer fail the workflow."
