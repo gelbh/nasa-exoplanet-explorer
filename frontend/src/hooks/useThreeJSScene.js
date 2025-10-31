@@ -52,7 +52,6 @@ export const useThreeJSScene = (canvasRef) => {
     raycasterRef.current = new THREE.Raycaster();
     mouseRef.current = new THREE.Vector2();
   };
-
   /**
    * Render basic galaxy structure immediately
    */
@@ -100,5 +99,9 @@ export const useThreeJSScene = (canvasRef) => {
     initThreeJS,
     renderBasicGalaxyStructure,
     cleanup,
+    getSystemCenterAndSize: (opts) =>
+      sceneManagerRef.current?.getSystemCenterAndSize
+        ? sceneManagerRef.current.getSystemCenterAndSize(opts)
+        : { center: new THREE.Vector3(0,0,0), size: 0, radius: 0, box: new THREE.Box3() }
   };
-};
+}
