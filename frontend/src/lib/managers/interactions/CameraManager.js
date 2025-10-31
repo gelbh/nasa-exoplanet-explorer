@@ -219,7 +219,8 @@ export class CameraManager {
         this.sceneManager.camera.position.copy(position);
         this.sceneManager.camera.lookAt(center);
         this.sceneManager.controls.target.copy(center);
-      } else {
+      } else if (systemRenderer) {
+        // Fallback: use max orbit radius calculation
         const maxOrbitRadius = systemRenderer.calculateMaxOrbitRadius(
           currentSystem.planets
         );
@@ -238,6 +239,17 @@ export class CameraManager {
         const targetPosition = direction
           .clone()
           .multiplyScalar(optimalDistance);
+
+        this.sceneManager.camera.position.copy(targetPosition);
+        this.sceneManager.camera.lookAt(0, 0, 0);
+        this.sceneManager.controls.target.set(0, 0, 0);
+      } else {
+        // No system renderer available - use safe default
+        const defaultDistance = 30;
+        const direction = new THREE.Vector3(0, 0.4, 0.9).normalize();
+        const targetPosition = direction
+          .clone()
+          .multiplyScalar(defaultDistance);
 
         this.sceneManager.camera.position.copy(targetPosition);
         this.sceneManager.camera.lookAt(0, 0, 0);
