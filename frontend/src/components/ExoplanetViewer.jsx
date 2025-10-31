@@ -105,7 +105,10 @@ const ExoplanetViewer = () => {
     selectStar,
     transitionToPlanetFromSystem,
     transitionToStarFromSystem,
+    switchToSystemView,
+    switchToPlanetView,
     switchToGalaxyView,
+    switchToGalaxyViewFromPlanet,
   } = useViewTransitions({
     sceneManagerRef,
     planetRendererRef,
@@ -739,6 +742,19 @@ const ExoplanetViewer = () => {
   }, []);
 
   // ============================================
+  // CONTEXT-AWARE NAVIGATION HANDLERS
+  // ============================================
+
+  const handleBackToGalaxy = () => {
+    // Use multi-stage transition from planet view for cinematic effect
+    if (viewMode === "planet") {
+      switchToGalaxyViewFromPlanet();
+    } else {
+      switchToGalaxyView();
+    }
+  };
+
+  // ============================================
   // RENDER
   // ============================================
 
@@ -752,6 +768,9 @@ const ExoplanetViewer = () => {
           instructionsRef={domRefs.instructionsRef}
           onResetCamera={resetCamera}
           onToggleFullscreen={toggleFullscreen}
+          viewMode={viewMode}
+          onBackToGalaxy={handleBackToGalaxy}
+          onBackToSystem={switchToSystemView}
         />
 
         {/* Combined Panel with Settings, Search, Info, and Tools tabs */}

@@ -207,6 +207,44 @@ input[name="viewMode"]:checked + label {
 }
 
 // ============================================
+// VIEW NAVIGATION BUTTONS
+// ============================================
+
+.exoplanet-nav-buttons {
+  position: absolute;
+  bottom: $spacing-xl;
+  right: $spacing-xl;
+  z-index: $z-controls;
+  padding: $spacing-md;
+  @include glassmorphism(0.75, 15px);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+
+  .nav-btn {
+    backdrop-filter: blur(10px);
+    border-color: $border-strong;
+    white-space: nowrap;
+    min-width: 150px;
+    @include transition(all, $transition-fast, $easing-standard);
+
+    &:hover {
+      background-color: $overlay-medium;
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateX(-4px);
+      box-shadow: $shadow-sm;
+    }
+
+    i {
+      @include transition(transform, $transition-fast, $easing-standard);
+    }
+
+    &:hover i {
+      transform: translateX(-2px);
+    }
+  }
+}
+
+// ============================================
 // RESPONSIVE CONTROLS
 // ============================================
 
@@ -231,6 +269,18 @@ input[name="viewMode"]:checked + label {
         font-size: 0.8rem;
         padding: 0.25rem 0.5rem;
       }
+    }
+  }
+
+  .exoplanet-nav-buttons {
+    bottom: 10px;
+    right: 10px;
+    padding: $spacing-sm;
+
+    .nav-btn {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      min-width: 120px;
     }
   }
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import CanvasControls from "./CanvasControls";
 import InstructionsOverlay from "./InstructionsOverlay";
+import ViewNavigationButtons from "./ViewNavigationButtons";
 
 /**
  * Canvas Container Component
@@ -12,6 +13,9 @@ const CanvasContainer = ({
   instructionsRef,
   onResetCamera,
   onToggleFullscreen,
+  viewMode,
+  onBackToGalaxy,
+  onBackToSystem,
 }) => {
   return (
     <div className="exoplanet-canvas-container">
@@ -48,6 +52,13 @@ const CanvasContainer = ({
       <CanvasControls
         onResetCamera={onResetCamera}
         onToggleFullscreen={onToggleFullscreen}
+      />
+
+      {/* View Navigation Buttons */}
+      <ViewNavigationButtons
+        viewMode={viewMode}
+        onBackToGalaxy={onBackToGalaxy}
+        onBackToSystem={onBackToSystem}
       />
 
       {/* Instructions Overlay */}
