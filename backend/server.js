@@ -270,7 +270,8 @@ app.get("/api/planet/:name", limiter, async (req, res) => {
     // Sanitize input to prevent SQL injection
     // TAP queries require proper escaping of single quotes
     // Additional validation: only allow alphanumeric, spaces, hyphens, and common planet name characters
-    if (!/^[a-zA-Z0-9\s\-_.()]+$/.test(planetName)) {
+    // Note: Using space character instead of \s to prevent newlines, tabs, etc.
+    if (!/^[a-zA-Z0-9 \-_.()]+$/.test(planetName)) {
       return res.status(400).json({
         error: "Invalid planet name format",
         message: "Planet name contains invalid characters",
@@ -393,7 +394,7 @@ app.post("/api/cache/clear", (req, res) => {
 });
 
 // Start server
-const server = app.listen(PORT, () => {
+const _server = app.listen(PORT, () => {
   console.log(`🚀 NASA Exoplanet Explorer API running on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🏓 Keep-alive ping: http://localhost:${PORT}/api/ping`);
