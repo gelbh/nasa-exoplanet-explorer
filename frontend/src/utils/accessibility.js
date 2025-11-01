@@ -8,8 +8,8 @@
  * @returns {boolean}
  */
 export const prefersReducedMotion = () => {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 };
 
 /**
@@ -17,8 +17,8 @@ export const prefersReducedMotion = () => {
  * @returns {boolean}
  */
 export const prefersHighContrast = () => {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-contrast: high)').matches;
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-contrast: high)").matches;
 };
 
 /**
@@ -26,18 +26,18 @@ export const prefersHighContrast = () => {
  * @param {string} message - Message to announce
  * @param {string} priority - 'polite' or 'assertive'
  */
-export const announceToScreenReader = (message, priority = 'polite') => {
-  if (typeof window === 'undefined') return;
-  
-  const announcement = document.createElement('div');
-  announcement.setAttribute('role', 'status');
-  announcement.setAttribute('aria-live', priority);
-  announcement.setAttribute('aria-atomic', 'true');
-  announcement.className = 'sr-only';
+export const announceToScreenReader = (message, priority = "polite") => {
+  if (typeof window === "undefined") return;
+
+  const announcement = document.createElement("div");
+  announcement.setAttribute("role", "status");
+  announcement.setAttribute("aria-live", priority);
+  announcement.setAttribute("aria-atomic", "true");
+  announcement.className = "sr-only";
   announcement.textContent = message;
-  
+
   document.body.appendChild(announcement);
-  
+
   // Remove after announcement
   setTimeout(() => {
     document.body.removeChild(announcement);
@@ -53,13 +53,13 @@ export const trapFocus = (element) => {
   const focusableElements = element.querySelectorAll(
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
   );
-  
+
   const firstFocusable = focusableElements[0];
   const lastFocusable = focusableElements[focusableElements.length - 1];
-  
+
   const handleTabKey = (e) => {
-    if (e.key !== 'Tab') return;
-    
+    if (e.key !== "Tab") return;
+
     if (e.shiftKey) {
       if (document.activeElement === firstFocusable) {
         lastFocusable.focus();
@@ -72,17 +72,17 @@ export const trapFocus = (element) => {
       }
     }
   };
-  
-  element.addEventListener('keydown', handleTabKey);
-  
+
+  element.addEventListener("keydown", handleTabKey);
+
   // Focus first element
   if (firstFocusable) {
     firstFocusable.focus();
   }
-  
+
   // Return cleanup function
   return () => {
-    element.removeEventListener('keydown', handleTabKey);
+    element.removeEventListener("keydown", handleTabKey);
   };
 };
 
@@ -92,8 +92,8 @@ export const trapFocus = (element) => {
  * @returns {HTMLElement}
  */
 export const createSROnlyText = (text) => {
-  const span = document.createElement('span');
-  span.className = 'sr-only';
+  const span = document.createElement("span");
+  span.className = "sr-only";
   span.textContent = text;
   return span;
 };
@@ -104,19 +104,19 @@ export const createSROnlyText = (text) => {
  */
 export const isUsingKeyboard = () => {
   let usingKeyboard = false;
-  
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
       usingKeyboard = true;
-      document.body.classList.add('keyboard-navigation');
+      document.body.classList.add("keyboard-navigation");
     }
   });
-  
-  document.addEventListener('mousedown', () => {
+
+  document.addEventListener("mousedown", () => {
     usingKeyboard = false;
-    document.body.classList.remove('keyboard-navigation');
+    document.body.classList.remove("keyboard-navigation");
   });
-  
+
   return usingKeyboard;
 };
 
@@ -128,4 +128,3 @@ export const isUsingKeyboard = () => {
 export const getAnimationDuration = (defaultDuration) => {
   return prefersReducedMotion() ? 0 : defaultDuration;
 };
-

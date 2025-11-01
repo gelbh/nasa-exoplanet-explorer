@@ -199,7 +199,8 @@ export function getAtmosphereColor(planet, starColor) {
 
   switch (composition) {
     case "hydrogen":
-      if (temp < 150) baseColor = { r: 0.85, g: 0.92, b: 1.0 }; // Pale blue
+      if (temp < 150)
+        baseColor = { r: 0.85, g: 0.92, b: 1.0 }; // Pale blue
       else if (temp < 1000)
         baseColor = { r: 0.95, g: 0.9, b: 0.85 }; // Pale tan
       else baseColor = { r: 0.9, g: 0.8, b: 0.7 }; // Brown (silicate clouds)
@@ -386,7 +387,10 @@ export function getRotationPeriod(planet) {
  */
 export function getDayNightTemperatureDiff(planet) {
   if (!isTidallyLocked(planet)) {
-    return { daySideTemp: planet.temperature, nightSideTemp: planet.temperature };
+    return {
+      daySideTemp: planet.temperature,
+      nightSideTemp: planet.temperature,
+    };
   }
 
   const baseTemp = planet.temperature || 300;

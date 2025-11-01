@@ -77,7 +77,9 @@ class ErrorBoundary extends React.Component {
             <h1 style={{ marginBottom: "1rem", fontSize: "2rem" }}>
               Oops! Something went wrong
             </h1>
-            <p style={{ marginBottom: "2rem", opacity: 0.9, fontSize: "1.1rem" }}>
+            <p
+              style={{ marginBottom: "2rem", opacity: 0.9, fontSize: "1.1rem" }}
+            >
               We encountered an unexpected error while exploring the cosmos.
               Don't worry, your journey can continue!
             </p>
@@ -98,7 +100,9 @@ class ErrorBoundary extends React.Component {
                 <summary style={{ cursor: "pointer", marginBottom: "0.5rem" }}>
                   Error Details (Development Mode)
                 </summary>
-                <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                <pre
+                  style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+                >
                   {this.state.error.toString()}
                   {this.state.errorInfo &&
                     "\n\n" + this.state.errorInfo.componentStack}
@@ -106,7 +110,9 @@ class ErrorBoundary extends React.Component {
               </details>
             )}
 
-            <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+            <div
+              style={{ display: "flex", gap: "1rem", justifyContent: "center" }}
+            >
               <button
                 onClick={this.handleReset}
                 style={{
@@ -128,7 +134,10 @@ class ErrorBoundary extends React.Component {
                   e.target.style.transform = "translateY(0)";
                 }}
               >
-                <i className="bx bx-refresh" style={{ marginRight: "0.5rem" }}></i>
+                <i
+                  className="bx bx-refresh"
+                  style={{ marginRight: "0.5rem" }}
+                ></i>
                 Try Again
               </button>
 
@@ -168,4 +177,3 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
-

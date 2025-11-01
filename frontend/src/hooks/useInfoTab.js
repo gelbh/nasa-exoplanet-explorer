@@ -179,7 +179,7 @@ export const useInfoTab = ({
     viewModeRef.current = "galaxy";
     currentPlanetRef.current = null;
     currentSystemRef.current = null;
-    
+
     // Sync state immediately after ref update
     if (returnToGalaxyView.syncState) {
       returnToGalaxyView.syncState();

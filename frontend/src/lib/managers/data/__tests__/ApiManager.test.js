@@ -91,10 +91,7 @@ describe("ApiManager", () => {
 
   describe("Cache Management", () => {
     test("should detect valid cache", () => {
-      localStorage.setItem(
-        apiManager.cacheTimestampKey,
-        Date.now().toString()
-      );
+      localStorage.setItem(apiManager.cacheTimestampKey, Date.now().toString());
       expect(apiManager.isCacheValid()).toBe(true);
     });
 
@@ -116,4 +113,3 @@ describe("ApiManager", () => {
     });
   });
 });
-

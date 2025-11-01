@@ -6,9 +6,9 @@ import React from "react";
  */
 const CanvasControls = ({ onResetCamera, onToggleFullscreen }) => {
   return (
-    <div 
-      className="exoplanet-controls-overlay" 
-      role="toolbar" 
+    <div
+      className="exoplanet-controls-overlay"
+      role="toolbar"
       aria-label="3D View Controls"
     >
       <div className="d-flex gap-3 align-items-center flex-wrap">

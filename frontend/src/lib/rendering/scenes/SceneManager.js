@@ -152,16 +152,17 @@ export class SceneManager {
       "webglcontextrestored",
       () => {
         console.log("WebGL context restored");
-        
+
         // Test if context restoration succeeded
-        const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        const gl =
+          canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
         if (!gl) {
           console.error("Failed to restore WebGL context");
           // Notify user that page reload is needed
           alert("WebGL context could not be restored. Please reload the page.");
           return;
         }
-        
+
         // Reinitialize the scene
         // Note: This creates a new scene - view state will be lost
         // TODO: Implement state preservation for better UX
@@ -265,7 +266,7 @@ export class SceneManager {
 
     const time = Date.now() * 0.0003; // Slower twinkling for distant stars
     const sizes = this.starField.geometry.attributes.size.array;
-    
+
     // Store original sizes on first run to prevent accumulation
     if (!this.starFieldOriginalSizes) {
       this.starFieldOriginalSizes = new Float32Array(sizes);
@@ -378,7 +379,7 @@ export class SceneManager {
     const startTarget = this.controls.target.clone();
     const targetControlsTarget = new THREE.Vector3(0, 0, 0); // Always look at origin
     const startTime = Date.now();
-    const transitionId = Symbol('transition');
+    const transitionId = Symbol("transition");
     this.cameraTransitionId = transitionId;
 
     const animateCamera = () => {
@@ -544,10 +545,10 @@ export class SceneManager {
     objectRadius,
     showOrbit = false,
     orbitRadius = null,
-    maxDistance = 25  // Default to 25 for backward compatibility, null = no limit
+    maxDistance = 25 // Default to 25 for backward compatibility, null = no limit
   ) {
     const fov = this.camera.fov * (Math.PI / 180);
-    
+
     // Use different multipliers based on context
     const multiplier = showOrbit ? 2.5 : 3.5; // Larger multiplier for direct object viewing
     let distance = Math.abs((objectRadius * multiplier) / Math.tan(fov / 2));
@@ -560,7 +561,7 @@ export class SceneManager {
     if (maxDistance !== null) {
       return Math.max(2.5, Math.min(maxDistance, distance));
     }
-    
+
     return Math.max(2.5, distance);
   }
 
@@ -739,7 +740,10 @@ export class SceneManager {
         // Find which segment we're in
         let segmentIndex = 0;
         for (let i = 0; i < cumulativeTimes.length - 1; i++) {
-          if (elapsed >= cumulativeTimes[i] && elapsed < cumulativeTimes[i + 1]) {
+          if (
+            elapsed >= cumulativeTimes[i] &&
+            elapsed < cumulativeTimes[i + 1]
+          ) {
             segmentIndex = i;
             break;
           }
@@ -752,13 +756,18 @@ export class SceneManager {
         const segmentProgress = (elapsed - segmentStart) / segmentDuration;
 
         // Apply global easing (ease-in-out cubic for smooth continuous motion)
-        const easedProgress = segmentProgress < 0.5
-          ? 4 * segmentProgress * segmentProgress * segmentProgress
-          : 1 - Math.pow(-2 * segmentProgress + 2, 3) / 2;
+        const easedProgress =
+          segmentProgress < 0.5
+            ? 4 * segmentProgress * segmentProgress * segmentProgress
+            : 1 - Math.pow(-2 * segmentProgress + 2, 3) / 2;
 
         // Determine start and end points for current segment
-        const segmentStartPos = segmentIndex === 0 ? startPosition : waypoints[segmentIndex - 1].position;
-        const segmentStartLookAt = segmentIndex === 0 ? startLookAt : waypoints[segmentIndex - 1].lookAt;
+        const segmentStartPos =
+          segmentIndex === 0
+            ? startPosition
+            : waypoints[segmentIndex - 1].position;
+        const segmentStartLookAt =
+          segmentIndex === 0 ? startLookAt : waypoints[segmentIndex - 1].lookAt;
         const segmentEndPos = waypoints[segmentIndex].position;
         const segmentEndLookAt = waypoints[segmentIndex].lookAt;
 
@@ -780,7 +789,11 @@ export class SceneManager {
         this.controls.update();
 
         // Check if we just reached a waypoint (trigger callback once)
-        if (segmentIndex > 0 && easedProgress > 0.99 && waypoints[segmentIndex - 1].onReach) {
+        if (
+          segmentIndex > 0 &&
+          easedProgress > 0.99 &&
+          waypoints[segmentIndex - 1].onReach
+        ) {
           if (!waypoints[segmentIndex - 1]._reached) {
             waypoints[segmentIndex - 1]._reached = true;
             waypoints[segmentIndex - 1].onReach();

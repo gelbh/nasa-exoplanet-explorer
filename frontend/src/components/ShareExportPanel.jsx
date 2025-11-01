@@ -134,4 +134,3 @@ const ShareExportPanel = ({ exportManager, viewState, currentPlanet }) => {
 };
 
 export default ShareExportPanel;
-

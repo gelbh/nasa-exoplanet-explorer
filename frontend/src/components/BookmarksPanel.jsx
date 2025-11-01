@@ -4,7 +4,11 @@ import React, { useState, useEffect } from "react";
  * Bookmarks Panel Component
  * Displays user's bookmarked planets and systems
  */
-const BookmarksPanel = ({ bookmarkManager, onPlanetSelect, onSystemSelect }) => {
+const BookmarksPanel = ({
+  bookmarkManager,
+  onPlanetSelect,
+  onSystemSelect,
+}) => {
   const [bookmarks, setBookmarks] = useState([]);
   const [filter, setFilter] = useState("all"); // 'all', 'planet', 'system'
   const [searchQuery, setSearchQuery] = useState("");
@@ -154,10 +158,16 @@ const BookmarksPanel = ({ bookmarkManager, onPlanetSelect, onSystemSelect }) => 
       </div>
 
       {/* Bookmarks List */}
-      <div className="bookmarks-list" style={{ maxHeight: "400px", overflowY: "auto" }}>
+      <div
+        className="bookmarks-list"
+        style={{ maxHeight: "400px", overflowY: "auto" }}
+      >
         {filteredBookmarks.length === 0 ? (
           <div className="text-center text-muted py-4">
-            <i className="bx bx-bookmark-alt-minus" style={{ fontSize: "3rem" }}></i>
+            <i
+              className="bx bx-bookmark-alt-minus"
+              style={{ fontSize: "3rem" }}
+            ></i>
             <p className="mb-0 mt-2">
               {searchQuery
                 ? "No bookmarks match your search"
@@ -216,4 +226,3 @@ const BookmarksPanel = ({ bookmarkManager, onPlanetSelect, onSystemSelect }) => 
 };
 
 export default BookmarksPanel;
-

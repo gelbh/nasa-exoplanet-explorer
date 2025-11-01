@@ -391,7 +391,6 @@ export const useCanvasInteraction = ({
     boundEventListenersRef.current.canvasContextMenu = (event) =>
       event.preventDefault();
     boundEventListenersRef.current.canvasWheel = () => {
-      // Don't disable followPlanet on zoom - only panning should disable it
       if (
         tooltipManagerRef.current.getSelectedObject &&
         tooltipManagerRef.current.getSelectedObject()

@@ -257,11 +257,7 @@ export class SystemRenderer {
       const seed = hashCode(planet.name + "_hasRings");
       const random = seededRandom(seed);
       if (random() > 0.7) {
-        ringRenderer.addPlanetRings(
-          planet,
-          planetRadius,
-          planetMesh
-        );
+        ringRenderer.addPlanetRings(planet, planetRadius, planetMesh);
       }
     }
   }
@@ -621,7 +617,7 @@ export class SystemRenderer {
 
         // Force material and texture update
         sunMesh.material = starMaterial; // Reassign to ensure mesh uses updated material
-        
+
         // Log for debugging
         console.log("Sun texture loaded and applied successfully");
       },
@@ -686,7 +682,8 @@ export class SystemRenderer {
       // Update angle and normalize to prevent float accumulation over long sessions
       planetMesh.userData.currentAngle += angularVelocity * deltaTime;
       // Keep angle in 0-2π range to prevent floating point drift
-      planetMesh.userData.currentAngle = planetMesh.userData.currentAngle % (2 * Math.PI);
+      planetMesh.userData.currentAngle =
+        planetMesh.userData.currentAngle % (2 * Math.PI);
 
       // Get orbital parameters (only use if enabled)
       const inclination = useInclination ? planet.orbitalInclination || 0 : 0;
@@ -841,16 +838,22 @@ export class SystemRenderer {
     if (this.planetMeshes.length === 0) {
       return {
         center: new THREE.Vector3(0, 0, 0),
-        size: { x: 20, y: 20, z: 20 }
+        size: { x: 20, y: 20, z: 20 },
       };
     }
 
     // Calculate bounding box from all planet meshes and their orbits
-    let minX = 0, maxX = 0, minY = 0, maxY = 0, minZ = 0, maxZ = 0;
+    let minX = 0,
+      maxX = 0,
+      minY = 0,
+      maxY = 0,
+      minZ = 0,
+      maxZ = 0;
 
     this.planetMeshes.forEach((mesh) => {
       const orbitRadius = mesh.userData.orbitRadius || 0;
-      const planetRadius = mesh.userData.actualRadius || mesh.userData.baseRadius || 0;
+      const planetRadius =
+        mesh.userData.actualRadius || mesh.userData.baseRadius || 0;
 
       // Account for the full orbital extent
       minX = Math.min(minX, -orbitRadius - planetRadius);
@@ -875,14 +878,20 @@ export class SystemRenderer {
     if (this.centralStar) {
       // Get star radius from geometry or default
       let starRadius = 1;
-      if (this.centralStar.type === 'Group') {
+      if (this.centralStar.type === "Group") {
         // Multi-star system - find the largest extent
-        this.centralStar.children.forEach(star => {
+        this.centralStar.children.forEach((star) => {
           if (star.geometry && star.geometry.parameters) {
-            starRadius = Math.max(starRadius, star.geometry.parameters.radius || 1);
+            starRadius = Math.max(
+              starRadius,
+              star.geometry.parameters.radius || 1
+            );
           }
         });
-      } else if (this.centralStar.geometry && this.centralStar.geometry.parameters) {
+      } else if (
+        this.centralStar.geometry &&
+        this.centralStar.geometry.parameters
+      ) {
         starRadius = this.centralStar.geometry.parameters.radius || 1;
       }
 
@@ -904,7 +913,7 @@ export class SystemRenderer {
     const size = {
       x: maxX - minX,
       y: maxY - minY,
-      z: maxZ - minZ
+      z: maxZ - minZ,
     };
 
     return { center, size };
@@ -1218,7 +1227,7 @@ export class SystemRenderer {
           }
         }
       });
-      
+
       this.scene.remove(this.centralStar);
       this.centralStar = null;
     }

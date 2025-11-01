@@ -102,6 +102,11 @@ export const useThreeJSScene = (canvasRef) => {
     getSystemCenterAndSize: (opts) =>
       sceneManagerRef.current?.getSystemCenterAndSize
         ? sceneManagerRef.current.getSystemCenterAndSize(opts)
-        : { center: new THREE.Vector3(0,0,0), size: 0, radius: 0, box: new THREE.Box3() }
+        : {
+            center: new THREE.Vector3(0, 0, 0),
+            size: 0,
+            radius: 0,
+            box: new THREE.Box3(),
+          },
   };
-}
+};

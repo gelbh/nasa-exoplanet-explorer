@@ -149,7 +149,9 @@
       background-color: $overlay-medium !important;
       color: $text-white !important;
       font-weight: 500 !important;
-      box-shadow: $shadow-md, inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      box-shadow:
+        $shadow-md,
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
         inset 0 0 20px rgba(255, 255, 255, 0.08) !important;
       border: 1px solid $border-light !important;
     }
@@ -158,7 +160,9 @@
     &:focus,
     &:focus-visible,
     &:active {
-      box-shadow: $shadow-md, inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      box-shadow:
+        $shadow-md,
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
         inset 0 0 20px rgba(255, 255, 255, 0.08) !important;
       outline: none !important;
       border: none !important;
@@ -476,7 +480,8 @@
   }
 
   // Override any excessive margins from child components
-  h5, h6 {
+  h5,
+  h6 {
     margin-top: 0;
     margin-bottom: $spacing-md;
   }

@@ -126,7 +126,9 @@
   z-index: $z-panels;
   @include glassmorphism(0.85, 20px);
   border-radius: $radius-2xl;
-  box-shadow: $shadow-lg, 0 0 0 1px $border-subtle;
+  box-shadow:
+    $shadow-lg,
+    0 0 0 1px $border-subtle;
   color: $text-white;
   @include transition-multiple(
     transform $transition-slow $easing-standard,

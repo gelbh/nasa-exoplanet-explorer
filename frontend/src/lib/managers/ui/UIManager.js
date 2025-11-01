@@ -248,8 +248,8 @@ export class UIManager {
           )}</div>
         </div>
         <span class="badge bg-${getTypeColor(planet.type)}">${this.sanitizeHTML(
-      getPlanetTypeName(planet.type)
-    )}</span>
+          getPlanetTypeName(planet.type)
+        )}</span>
       </div>
     `;
     item.addEventListener("click", () => {

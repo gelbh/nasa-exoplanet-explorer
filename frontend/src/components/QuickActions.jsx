@@ -64,7 +64,8 @@ const QuickActions = ({
         <i className="bx bx-bolt"></i> Quick Actions
       </h6>
       <p className="text-white-50 small mb-3">
-        Actions for: <strong className="text-white">{currentPlanet.name}</strong>
+        Actions for:{" "}
+        <strong className="text-white">{currentPlanet.name}</strong>
       </p>
 
       <div className="d-grid gap-2">
@@ -100,7 +101,10 @@ const QuickActions = ({
       </div>
 
       {isInComparison && (
-        <div className="alert alert-success mt-3 mb-0" style={{ fontSize: "0.875rem" }}>
+        <div
+          className="alert alert-success mt-3 mb-0"
+          style={{ fontSize: "0.875rem" }}
+        >
           <i className="bx bx-info-circle"></i> This planet is ready to compare!
           View the comparison in the section below.
         </div>
@@ -110,4 +114,3 @@ const QuickActions = ({
 };
 
 export default QuickActions;
-

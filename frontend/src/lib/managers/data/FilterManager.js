@@ -21,7 +21,7 @@ export class FilterManager {
     const solarSystem = generateSolarSystemData();
     this.exoplanets = [...solarSystem, ...exoplanets];
     this.filteredExoplanets = [...this.exoplanets];
-    
+
     // Invalidate search cache when data changes
     this.unifiedSearchCache = null;
     this.unifiedSearchCacheQuery = null;
@@ -364,10 +364,13 @@ export class FilterManager {
 
     systems.forEach((planets, starName) => {
       // Calculate average distance for the system
-      const distances = planets.map(p => p.distance).filter(d => d != null && d > 0);
-      const systemDistance = distances.length > 0
-        ? distances.reduce((sum, d) => sum + d, 0) / distances.length
-        : (planets[0]?.distance || 0);
+      const distances = planets
+        .map((p) => p.distance)
+        .filter((d) => d != null && d > 0);
+      const systemDistance =
+        distances.length > 0
+          ? distances.reduce((sum, d) => sum + d, 0) / distances.length
+          : planets[0]?.distance || 0;
 
       notable.push({
         starName: starName,
