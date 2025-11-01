@@ -273,9 +273,7 @@ export class ApiManager {
     // Extract and validate with realistic physical bounds
     const radius = Math.max(0.1, Math.min(raw.pl_rade || 1.0, 100)); // 0.1-100 Earth radii
     const mass = Math.max(0.01, Math.min(raw.pl_bmasse || 1.0, 10000)); // 0.01-10000 Earth masses
-    // Planet equilibrium temperature: Most planets are < 5000K, but allow up to 15000K
-    // to accommodate ultra-hot Jupiters and planets around very hot stars
-    const temp = Math.max(0, Math.min(raw.pl_eqt || 288, 15000)); // 0-15000 Kelvin
+    const temp = Math.max(0, Math.min(raw.pl_eqt || 288, 10000)); // 0-10000 Kelvin
     const distance = Math.max(0, raw.sy_dist || 0); // parsecs (non-negative)
     const density = raw.pl_dens
       ? Math.max(0.01, Math.min(raw.pl_dens, 50)) // 0.01-50 g/cm³
@@ -372,7 +370,8 @@ export class ApiManager {
         return radius < 1.5 ? "terrestrial" : "super-earth";
       } else if (density >= 1.0 && density < 3.5) {
         // Density 1.0-3.5 g/cm³: gas giants (Neptune-like or Jupiter-like)
-        return density <= 2.0 ? "jupiter" : "neptune";
+        // Neptune (ice giant) has higher density ~1.6, Jupiter (gas giant) ~1.3
+        return density >= 1.5 ? "neptune" : "jupiter";
       } else if (density < 1.0) {
         // Very low density: gas giant (Jupiter-like)
         return "jupiter";
