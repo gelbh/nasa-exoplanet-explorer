@@ -33,7 +33,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/nasa-exoplanet-explorer.git"
+    "url": "https://github.com/gelbh/nasa-exoplanet-explorer.git"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
