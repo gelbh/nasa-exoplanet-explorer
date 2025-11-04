@@ -14,9 +14,9 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Extended timeout to handle Render free tier cold starts (30-90 seconds)
-    # Strategy: 5 retries × 30s timeout + exponential backoff (15s, 30s, 60s, 120s)
-    # Total max wait: ~3 minutes to accommodate slow cold starts
+    # Optimized timeout to handle Render free tier cold starts (20-90 seconds)
+    # Strategy: 5 retries × 20s timeout + linear backoff (5s, 10s, 15s, 20s)
+    # Total max wait: ~1.5 minutes for faster cold start detection
 
     steps:
       - name: Validate Backend URL Secret
@@ -32,6 +32,8 @@ jobs:
       - name: Ping Backend Keep-Alive Endpoint
         id: ping
         run: |
+          # Track total workflow timing
+          WORKFLOW_START=$(date +%s)
           echo "========================================="
           echo "🏓 Pinging backend at $(date)"
           echo "========================================="
@@ -39,18 +41,24 @@ jobs:
           BACKEND_URL="${{ secrets.BACKEND_URL }}"
           ENDPOINT="${BACKEND_URL}/api/ping"
           MAX_RETRIES=5
-          RETRY_DELAY=15
+          INITIAL_DELAY=5
+          DELAY_INCREMENT=5
+          CURL_TIMEOUT=20
           SUCCESS=false
+          COLD_START=false
+          TOTAL_RETRY_DELAY=0
+          TOTAL_ATTEMPTS=0
 
-          # Function to ping with retry logic and exponential backoff
-          # Designed to handle Render free tier cold starts which can take 30-90+ seconds
+          # Function to ping with retry logic and linear backoff
+          # Optimized to handle Render free tier cold starts (20-90 seconds)
           ping_with_retry() {
             local attempt=1
-            local delay=$RETRY_DELAY
+            local delay=$INITIAL_DELAY
             
             while [ $attempt -le $MAX_RETRIES ]; do
+              ATTEMPT_START=$(date +%s)
               echo ""
-              echo "Attempt $attempt of $MAX_RETRIES..."
+              echo "Attempt $attempt of $MAX_RETRIES at $(date +%H:%M:%S)..."
               
               # Create temp file for response body
               temp_file=$(mktemp)
@@ -58,13 +66,15 @@ jobs:
               # Make request with timeout and capture response code, time, and body in one call
               # curl writes: body to file, then status code and time to stdout
               curl_output=$(curl -s -w "\n%{http_code}\n%{time_total}" \
-                --max-time 30 \
+                --max-time $CURL_TIMEOUT \
                 --silent \
                 --show-error \
                 -o "$temp_file" \
                 "${ENDPOINT}" 2>&1)
               
               curl_exit_code=$?
+              ATTEMPT_END=$(date +%s)
+              ATTEMPT_DURATION=$((ATTEMPT_END - ATTEMPT_START))
               
               # Extract components from curl output
               # Last line is response time, second to last is HTTP code
@@ -89,29 +99,43 @@ jobs:
                 echo "✅ Backend responded successfully!"
                 echo "📡 HTTP Status: $http_code"
                 echo "⏱️  Response Time: ${response_time}s"
+                echo "⏱️  Attempt Duration: ${ATTEMPT_DURATION}s"
                 if [ -n "$response_body" ]; then
                   echo "📄 Response: $response_body"
                 fi
                 
-                # Output response time for summary
+                # Output metrics for summary
                 echo "response_time=${response_time}" >> $GITHUB_OUTPUT
+                echo "total_attempts=${attempt}" >> $GITHUB_OUTPUT
+                echo "cold_start=${COLD_START}" >> $GITHUB_OUTPUT
                 SUCCESS=true
                 return 0
               else
                 echo "⚠️  Attempt $attempt failed"
                 echo "📡 HTTP Status: ${http_code:-'Connection failed'}"
+                echo "⏱️  Attempt Duration: ${ATTEMPT_DURATION}s (timeout: ${CURL_TIMEOUT}s)"
+                
+                # Detect cold start on first attempt timeout
+                if [ $attempt -eq 1 ] && { [ "$http_code" = "000" ] || [ "$http_code" != "200" ]; }; then
+                  COLD_START=true
+                  echo "🧊 Cold start detected - backend is spinning up from sleep"
+                  echo "cold_start=true" >> $GITHUB_OUTPUT
+                fi
+                
                 if [ -n "$response_body" ] && [ "$response_body" != "null" ]; then
                   echo "📄 Response: $response_body"
                 fi
                 
                 if [ $attempt -lt $MAX_RETRIES ]; then
-                  echo "⏳ Waiting ${delay}s before retry..."
+                  echo "⏳ Waiting ${delay}s before retry (linear backoff)..."
                   sleep $delay
-                  delay=$((delay * 2)) # Exponential backoff: 15s, 30s, 60s, 120s
+                  TOTAL_RETRY_DELAY=$((TOTAL_RETRY_DELAY + delay))
+                  delay=$((delay + DELAY_INCREMENT)) # Linear backoff: 5s, 10s, 15s, 20s
                 fi
               fi
               
               attempt=$((attempt + 1))
+              TOTAL_ATTEMPTS=$((TOTAL_ATTEMPTS + 1))
             done
             
             return 1
@@ -119,17 +143,39 @@ jobs:
 
           # Execute ping with retries
           if ping_with_retry; then
+            WORKFLOW_END=$(date +%s)
+            TOTAL_DURATION=$((WORKFLOW_END - WORKFLOW_START))
             echo ""
             echo "========================================="
             echo "✅ Keep-alive ping completed successfully"
             echo "========================================="
+            echo "📊 Timing Metrics:"
+            echo "   Total Duration: ${TOTAL_DURATION}s"
+            echo "   Total Attempts: ${TOTAL_ATTEMPTS}"
+            echo "   Retry Delays: ${TOTAL_RETRY_DELAY}s"
+            if [ "$COLD_START" = "true" ]; then
+              echo "   Status: Cold Start (backend was sleeping)"
+            else
+              echo "   Status: Warm (backend was active)"
+            fi
+            echo "response_time_total=${TOTAL_DURATION}" >> $GITHUB_OUTPUT
+            echo "retry_delays_total=${TOTAL_RETRY_DELAY}" >> $GITHUB_OUTPUT
           else
+            WORKFLOW_END=$(date +%s)
+            TOTAL_DURATION=$((WORKFLOW_END - WORKFLOW_START))
             echo ""
             echo "========================================="
             echo "⚠️  Keep-alive ping failed after $MAX_RETRIES attempts"
+            echo "========================================="
+            echo "📊 Timing Metrics:"
+            echo "   Total Duration: ${TOTAL_DURATION}s"
+            echo "   Total Attempts: ${TOTAL_ATTEMPTS}"
+            echo "   Retry Delays: ${TOTAL_RETRY_DELAY}s"
             echo "ℹ️  This is likely due to a cold start timeout on Render free tier"
             echo "ℹ️  The service will wake up on the next successful ping or user request"
-            echo "========================================="
+            echo "cold_start=true" >> $GITHUB_OUTPUT
+            echo "response_time_total=${TOTAL_DURATION}" >> $GITHUB_OUTPUT
+            echo "retry_delays_total=${TOTAL_RETRY_DELAY}" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -139,6 +185,14 @@ jobs:
           echo "✅ Backend Status: Healthy"
           echo "🏓 Keep-alive ping successful"
           echo "⏱️  Response Time: ${{ steps.ping.outputs.response_time }}s"
+          echo "⏱️  Total Duration: ${{ steps.ping.outputs.response_time_total }}s"
+          echo "🔄 Total Attempts: ${{ steps.ping.outputs.total_attempts }}"
+          if [ "${{ steps.ping.outputs.cold_start }}" = "true" ]; then
+            echo "🧊 Backend Status: Cold Start (was sleeping, now awake)"
+          else
+            echo "🔥 Backend Status: Warm (was already active)"
+          fi
+          echo "⏳ Retry Delays: ${{ steps.ping.outputs.retry_delays_total }}s"
           echo "🕐 Next ping scheduled in 10 minutes"
           echo ""
           echo "The backend will remain active on Render free tier."
