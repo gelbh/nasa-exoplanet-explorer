@@ -32,14 +32,6 @@ An interactive 3D visualization tool for exploring confirmed exoplanets from NAS
 - **Interactive Search**: Search and filter planets by name, type, temperature, and distance
 - **Planet Details**: View comprehensive information about each exoplanet
 
-### New Features ✨
-- **Bookmarks & Favorites**: Save and manage your favorite planets and systems
-- **Planet Comparison**: Compare multiple exoplanets side-by-side with visual charts
-- **Share & Export**: Generate shareable URLs, export screenshots, and download planet data
-- **PWA Support**: Install as an app, works offline with service worker caching
-- **Accessibility**: WCAG 2.1 AA compliant with keyboard navigation and screen reader support
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
-
 ## Technology Stack
 
 ### Frontend
@@ -371,16 +363,6 @@ Please ensure your code:
 - Includes appropriate tests
 - Updates documentation as needed
 - Passes all CI checks
-
-## Roadmap
-
-- [ ] Timeline visualization of exoplanet discoveries
-- [ ] Educational mode with guided tours
-- [ ] Statistics dashboard with charts
-- [ ] Multi-language support (i18n)
-- [ ] Advanced filters (habitable zone, discovery method)
-- [ ] 3D model exports (GLTF/OBJ)
-- [ ] Collaborative features (shared bookmarks)
 
 ## Credits
 
