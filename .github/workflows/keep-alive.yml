@@ -1,14 +1,7 @@
 name: Keep Backend Alive
 
-on:
-  schedule:
-    # Run every 10 minutes to prevent Render free tier from sleeping
-    # Render free tier spins down after 15 minutes of inactivity
-    # Note: GitHub Actions scheduled workflows may be delayed during high load
-    - cron: "*/10 * * * *"
-
-  # Allow manual trigger for testing
-  workflow_dispatch:
+# Workflow disabled - will not run on schedule or manual trigger
+on: []
 
 jobs:
   ping:
